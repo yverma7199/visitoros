@@ -3,25 +3,60 @@ const { appendRow, setCors, VISITORS_SHEET } = require('./_sheets');
 const { sendApprovalRequest } = require('./_whatsapp');
 const { v4: uuidv4 } = require('uuid');
 
-// Upload base64 photo to Cloudinary
+// ─────────────────────────────────────────
+// FIX 1: Cloudinary — use multipart/form-data (not URLSearchParams)
+// The previous version sent base64 as url-encoded which breaks for large images
+// ─────────────────────────────────────────
 async function uploadPhotoToCloudinary(base64DataUrl) {
-  if (!base64DataUrl || !process.env.CLOUDINARY_CLOUD_NAME) return '';
+  if (!base64DataUrl || !process.env.CLOUDINARY_CLOUD_NAME) {
+    console.log('[Cloudinary] Skipping — no base64 or no cloud name configured');
+    return '';
+  }
+
   try {
     const axios = require('axios');
-    const formData = new URLSearchParams();
-    formData.append('file', base64DataUrl);
-    formData.append('upload_preset', process.env.CLOUDINARY_UPLOAD_PRESET || 'visitor_photos');
-    formData.append('folder', 'visitor_photos');
+
+    // Build proper multipart form data
+    const boundary = '----CloudinaryBoundary' + Date.now();
+    const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET || 'visitor_photos';
+
+    // Compose multipart body manually (no FormData in Node serverless)
+    const lines = [];
+    const addField = (name, value) => {
+      lines.push(`--${boundary}`);
+      lines.push(`Content-Disposition: form-data; name="${name}"`);
+      lines.push('');
+      lines.push(value);
+    };
+
+    addField('upload_preset', uploadPreset);
+    addField('folder', 'visitor_photos');
+    addField('file', base64DataUrl); // base64 data URL like data:image/jpeg;base64,...
+    lines.push(`--${boundary}--`);
+    const body = lines.join('\r\n');
 
     const response = await axios.post(
       `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload`,
-      formData.toString(),
-      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+      body,
+      {
+        headers: {
+          'Content-Type': `multipart/form-data; boundary=${boundary}`,
+        },
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
+        timeout: 15000,
+      }
     );
-    return response.data.secure_url || '';
+
+    const url = response.data.secure_url || '';
+    console.log('[Cloudinary] Upload success:', url);
+    return url;
+
   } catch (err) {
-    console.error('[Cloudinary] Upload failed:', err.message);
-    return base64DataUrl.substring(0, 100) + '... (upload failed)';
+    // Log full error for debugging
+    console.error('[Cloudinary] Upload failed:', err.response?.data || err.message);
+    // Return empty string — don't store raw base64 in the sheet
+    return '';
   }
 }
 
@@ -40,7 +75,7 @@ module.exports = async (req, res) => {
       approver_mobile,
       visit_date,
       visit_time,
-      photo_base64, // NEW: base64 image from camera
+      photo_base64,
     } = req.body;
 
     // Validate required fields
@@ -58,7 +93,16 @@ module.exports = async (req, res) => {
 
     const visitor_id = uuidv4();
 
-    // Upload photo to Cloudinary (async, doesn't block if fails)
+    // ─────────────────────────────────────────
+    // FIX 2: Mobile number — prefix with apostrophe to prevent Google Sheets
+    // from treating numbers like 8708801547 as a formula (causing #ERROR!)
+    // We store as plain string by prepending a tab character in RAW mode
+    // ─────────────────────────────────────────
+    // Clean the mobile — strip spaces/dashes, keep + and digits
+    const cleanMobile = String(visitor_mobile).replace(/[^\d+]/g, '');
+    const cleanApprover = String(approver_mobile).replace(/[^\d+]/g, '');
+
+    // Upload photo
     let photo_url = '';
     if (photo_base64) {
       photo_url = await uploadPhotoToCloudinary(photo_base64);
@@ -67,11 +111,12 @@ module.exports = async (req, res) => {
     const rowData = [
       visitor_id,
       visitor_name,
-      visitor_mobile,
+      // FIX: Prefix with ' (apostrophe) forces Google Sheets to treat as text
+      `'${cleanMobile}`,
       visitor_email || '',
       purpose,
       person_to_meet,
-      approver_mobile,
+      `'${cleanApprover}`,
       visit_date,
       visit_time,
       photo_url,
@@ -85,11 +130,27 @@ module.exports = async (req, res) => {
 
     await appendRow(VISITORS_SHEET, rowData);
 
-    // Fire WhatsApp approval (non-blocking)
-    const visitor = { visitor_id, visitor_name, visitor_mobile, purpose, visit_date, visit_time };
-    sendApprovalRequest(approver_mobile, visitor).catch(err => {
-      console.error('[WA] approval send failed:', err.message);
-    });
+    // ─────────────────────────────────────────
+    // FIX 3: WhatsApp — use the clean approver number (no apostrophe prefix)
+    // and log errors properly so we can debug
+    // ─────────────────────────────────────────
+    const visitor = {
+      visitor_id,
+      visitor_name,
+      visitor_mobile: cleanMobile,
+      purpose,
+      visit_date,
+      visit_time,
+    };
+
+    // Send WhatsApp — await it so we can catch and log the real error
+    try {
+      await sendApprovalRequest(cleanApprover, visitor);
+      console.log('[WA] Approval request sent to', cleanApprover);
+    } catch (waErr) {
+      // Log the full WhatsApp error — check Vercel logs for this
+      console.error('[WA] FAILED:', JSON.stringify(waErr.response?.data || waErr.message));
+    }
 
     return res.status(200).json({
       success: true,
@@ -97,6 +158,7 @@ module.exports = async (req, res) => {
       visitor_id,
       photo_url,
     });
+
   } catch (err) {
     console.error('[/submit-visitor]', err.message);
     return res.status(500).json({ success: false, error: err.message });

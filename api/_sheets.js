@@ -2,7 +2,6 @@
 const { google } = require('googleapis');
 
 function getClient() {
-  // Handle both escaped \\n (from env UI) and real newlines
   const privateKey = (process.env.GOOGLE_PRIVATE_KEY || '')
     .replace(/\\n/g, '\n');
 
@@ -30,7 +29,14 @@ async function getSheetData(sheetName) {
   const headers = rows[0];
   return rows.slice(1).map(row => {
     const obj = {};
-    headers.forEach((h, i) => { obj[h] = row[i] || ''; });
+    headers.forEach((h, i) => {
+      // Strip leading apostrophe that we add to prevent formula errors
+      let val = row[i] || '';
+      if (typeof val === 'string' && val.startsWith("'")) {
+        val = val.slice(1);
+      }
+      obj[h] = val;
+    });
     return obj;
   });
 }
@@ -40,7 +46,9 @@ async function appendRow(sheetName, rowData) {
   await sheets.spreadsheets.values.append({
     spreadsheetId: SPREADSHEET_ID,
     range: `${sheetName}!A1`,
-    valueInputOption: 'USER_ENTERED',
+    // RAW prevents Google Sheets from interpreting values as formulas
+    // This stops phone numbers like +91... being treated as expressions
+    valueInputOption: 'RAW',
     resource: { values: [rowData] },
   });
 }
@@ -60,7 +68,7 @@ async function updateRowByColumn(sheetName, searchColumn, searchValue, updates) 
   let targetRowIndex = -1;
   for (let i = 1; i < rows.length; i++) {
     if ((rows[i][colIdx] || '') === searchValue) {
-      targetRowIndex = i + 1; // Sheets rows are 1-indexed
+      targetRowIndex = i + 1;
       break;
     }
   }
@@ -70,7 +78,6 @@ async function updateRowByColumn(sheetName, searchColumn, searchValue, updates) 
   for (const [key, value] of Object.entries(updates)) {
     const ci = headers.indexOf(key);
     if (ci !== -1) {
-      // Handle columns beyond Z
       let colLetter;
       if (ci < 26) {
         colLetter = String.fromCharCode(65 + ci);
@@ -83,12 +90,16 @@ async function updateRowByColumn(sheetName, searchColumn, searchValue, updates) 
   if (data.length > 0) {
     await sheets.spreadsheets.values.batchUpdate({
       spreadsheetId: SPREADSHEET_ID,
-      resource: { valueInputOption: 'USER_ENTERED', data },
+      resource: {
+        // RAW here too — prevents approval_time, pass_link etc. being misinterpreted
+        valueInputOption: 'RAW',
+        data,
+      },
     });
   }
 }
 
-// CORS helper for all API handlers
+// CORS helper
 function setCors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
