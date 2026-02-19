@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/people",              "dest": "/api/people.js" },
+    { "src": "/submit-visitor",      "dest": "/api/submit-visitor.js" },
+    { "src": "/approve/(.*)",        "dest": "/api/approve.js?visitorId=$1" },
+    { "src": "/reject/(.*)",         "dest": "/api/reject.js?visitorId=$1" },
+    { "src": "/pass/(.*)",           "dest": "/api/pass.js?visitorId=$1" },
+    { "src": "/scan",                "dest": "/api/scan.js" },
+    { "src": "/whatsapp/webhook",    "dest": "/api/webhook.js" },
+    { "src": "/admin",               "dest": "/api/admin.js" },
+    { "src": "/(.*)",                "dest": "/public/$1" }
+  ]
+}
