@@ -6,239 +6,148 @@
   <title>Staff Portal — VisitorOS</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg: #f7f4ef;
-      --surface: #ffffff;
-      --border: #e4ddd4;
-      --text: #1a1510;
-      --text-muted: #6b6055;
-      --text-dim: #a89e93;
-      --accent: #2c4a3e;
-      --accent-warm: #c4622d;
-      --error: #c0392b;
-      --shadow: 0 2px 16px rgba(26,21,16,0.07);
-      --shadow-lg: 0 8px 40px rgba(26,21,16,0.12);
+    :root{
+      --bg:#f7f4ef; --s:#fff; --s2:#faf8f5; --b:#e4ddd4;
+      --t:#1a1510; --tm:#6b6055; --td:#a89e93;
+      --ac:#2c4a3e; --aw:#c4622d; --ok:#2c7a4b; --err:#c0392b;
+      --shadow:0 2px 16px rgba(26,21,16,.07); --shadow-lg:0 8px 40px rgba(26,21,16,.12);
     }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+    body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");opacity:.6;pointer-events:none;z-index:0;}
 
-    /* Paper noise */
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
-      opacity: 0.6; pointer-events: none; z-index: 0;
-    }
+    .card{position:relative;z-index:1;background:var(--s);border:1px solid var(--b);border-radius:20px;padding:44px 38px;width:100%;max-width:420px;box-shadow:var(--shadow-lg);}
 
-    .card {
-      position: relative; z-index: 1;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 48px 40px;
-      width: 100%;
-      max-width: 420px;
-      box-shadow: var(--shadow-lg);
-      animation: fadeUp .5s ease;
-    }
-    @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+    .logo-row{display:flex;align-items:center;gap:9px;margin-bottom:30px;}
+    .logo-icon{width:33px;height:33px;background:var(--ac);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;}
+    .logo-text{font-family:'DM Mono',monospace;font-size:14px;}
 
-    .logo-row {
-      display: flex; align-items: center; gap: 10px; margin-bottom: 32px;
+    /* Scan alert - shown when redirected from QR */
+    .scan-alert{
+      background:linear-gradient(135deg,rgba(44,74,62,.05),rgba(44,122,75,.07));
+      border:1.5px solid rgba(44,74,62,.2); border-radius:12px;
+      padding:16px; margin-bottom:24px;
+      display:none; align-items:center; gap:12px;
     }
-    .logo-icon {
-      width: 34px; height: 34px; background: var(--accent);
-      border-radius: 9px; display: flex; align-items: center; justify-content: center; color: #fff;
-    }
-    .logo-text { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--text); }
+    .scan-alert.visible{display:flex;}
+    .sa-icon{width:38px;height:38px;border-radius:50%;background:rgba(44,74,62,.1);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+    .sa-text{font-size:13px;color:var(--tm);}
+    .sa-text strong{display:block;font-size:13px;color:var(--t);margin-bottom:2px;}
 
-    h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 28px; font-weight: 700;
-      color: var(--text); margin-bottom: 8px;
-      letter-spacing: -.5px;
-    }
-    .subtitle {
-      font-size: 14px; color: var(--text-muted); margin-bottom: 32px; line-height: 1.5;
-    }
+    h1{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;margin-bottom:7px;}
+    .subtitle{font-size:14px;color:var(--tm);margin-bottom:28px;line-height:1.5;}
 
-    /* Login form */
-    #loginView label {
-      display: block; font-size: 12px; font-weight: 500;
-      color: var(--text-muted); margin-bottom: 7px; letter-spacing: .3px;
-    }
-    #loginView input {
-      width: 100%; background: #faf8f5; border: 1.5px solid var(--border);
-      border-radius: 10px; color: var(--text); font-family: 'DM Sans', sans-serif;
-      font-size: 15px; padding: 11px 14px; outline: none;
-      transition: border-color .2s, box-shadow .2s;
-    }
-    #loginView input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(44,74,62,.08);
-    }
-    #loginView input.shake {
-      animation: shake .35s ease;
-      border-color: var(--error);
-    }
-    @keyframes shake {
-      0%,100%{transform:translateX(0)}
-      20%{transform:translateX(-6px)}
-      40%{transform:translateX(6px)}
-      60%{transform:translateX(-4px)}
-      80%{transform:translateX(4px)}
-    }
+    /* Login */
+    #loginView label{display:block;font-size:11px;font-weight:500;color:var(--tm);margin-bottom:7px;letter-spacing:.5px;font-family:'DM Mono',monospace;text-transform:uppercase;}
+    #loginView input{width:100%;background:var(--s2);border:1.5px solid var(--b);border-radius:10px;color:var(--t);font-family:'DM Sans',sans-serif;font-size:15px;padding:11px 14px;outline:none;transition:border-color .2s,box-shadow .2s;}
+    #loginView input:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(44,74,62,.08);}
+    #loginView input.shake{animation:shake .35s ease;border-color:var(--err);}
+    @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+    .err-msg{font-size:12px;color:var(--err);font-family:'DM Mono',monospace;min-height:18px;margin-top:7px;}
+    .login-btn{width:100%;margin-top:18px;background:var(--ac);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;padding:13px;cursor:pointer;transition:background .15s,transform .15s,box-shadow .15s;box-shadow:0 4px 16px rgba(44,74,62,.2);}
+    .login-btn:hover{background:#1e3329;transform:translateY(-1px);}
+    .attempts{font-size:11px;color:var(--td);font-family:'DM Mono',monospace;text-align:center;margin-top:10px;}
 
-    .error-msg {
-      font-size: 12px; color: var(--error);
-      font-family: 'DM Mono', monospace;
-      min-height: 18px; margin-top: 7px;
-    }
+    /* Portal */
+    #portalView{display:none;}
+    #portalView.visible{display:block;animation:fadeUp .35s ease;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
-    .login-btn {
-      width: 100%; margin-top: 20px;
-      background: var(--accent); color: #fff;
-      border: none; border-radius: 10px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 15px; font-weight: 600;
-      padding: 13px; cursor: pointer;
-      transition: background .15s, transform .15s, box-shadow .15s;
-      box-shadow: 0 4px 16px rgba(44,74,62,.2);
-    }
-    .login-btn:hover { background: #1e3329; transform: translateY(-1px); box-shadow: 0 6px 22px rgba(44,74,62,.28); }
-    .login-btn:active { transform: translateY(0); }
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;}
+    .pc{background:var(--s2);border:1.5px solid var(--b);border-radius:13px;padding:22px 18px;text-decoration:none;color:var(--t);transition:border-color .2s,box-shadow .2s,transform .15s;display:flex;flex-direction:column;gap:10px;}
+    .pc:hover{border-color:var(--ac);box-shadow:0 4px 20px rgba(44,74,62,.1);transform:translateY(-2px);}
+    .pc-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px;}
+    .pc-icon.g{background:rgba(44,122,75,.1);}
+    .pc-icon.b{background:rgba(44,74,100,.1);}
+    .pc h3{font-size:14px;font-weight:600;}
+    .pc p{font-size:12px;color:var(--tm);line-height:1.4;}
 
-    /* Portal - after login */
-    #portalView { display: none; }
-    #portalView.visible { display: block; animation: fadeUp .35s ease; }
+    /* Highlighted scan card when coming from QR */
+    .pc.highlight{border-color:var(--ac);background:rgba(44,74,62,.04);}
+    .pc.highlight .pc-icon.b{background:rgba(44,74,62,.12);}
 
-    .portal-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px;
-    }
+    .logout-row{margin-top:18px;text-align:center;}
+    .logout-btn{background:none;border:none;color:var(--td);font-family:'DM Mono',monospace;font-size:12px;cursor:pointer;transition:color .2s;}
+    .logout-btn:hover{color:var(--aw);}
 
-    .portal-card {
-      background: var(--bg);
-      border: 1.5px solid var(--border);
-      border-radius: 14px;
-      padding: 24px 20px;
-      text-decoration: none;
-      color: var(--text);
-      transition: border-color .2s, box-shadow .2s, transform .15s;
-      display: flex; flex-direction: column; gap: 10px;
-    }
-    .portal-card:hover {
-      border-color: var(--accent);
-      box-shadow: 0 4px 20px rgba(44,74,62,.1);
-      transform: translateY(-2px);
-    }
-    .portal-card-icon {
-      width: 44px; height: 44px; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 20px;
-    }
-    .portal-card-icon.green { background: rgba(44,122,75,.1); }
-    .portal-card-icon.blue { background: rgba(44,74,100,.1); }
-    .portal-card h3 { font-size: 15px; font-weight: 600; color: var(--text); }
-    .portal-card p { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
-
-    .logout-row {
-      margin-top: 20px; text-align: center;
-    }
-    .logout-btn {
-      background: none; border: none; color: var(--text-dim);
-      font-family: 'DM Mono', monospace; font-size: 12px;
-      cursor: pointer; transition: color .2s; padding: 4px 8px;
-    }
-    .logout-btn:hover { color: var(--accent-warm); }
-
-    .back-link {
-      display: block; text-align: center; margin-top: 20px;
-      font-size: 13px; color: var(--text-dim); text-decoration: none;
-      font-family: 'DM Mono', monospace; transition: color .2s;
-    }
-    .back-link:hover { color: var(--accent); }
-
-    .attempts-hint {
-      font-size: 11px; color: var(--text-dim);
-      font-family: 'DM Mono', monospace;
-      text-align: center; margin-top: 12px;
-    }
+    .back{display:block;text-align:center;margin-top:18px;font-size:12px;color:var(--td);text-decoration:none;font-family:'DM Mono',monospace;transition:color .2s;}
+    .back:hover{color:var(--ac);}
   </style>
 </head>
 <body>
   <div class="card">
     <div class="logo-row">
-      <div class="logo-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </div>
+      <div class="logo-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       <span class="logo-text">VisitorOS</span>
+    </div>
+
+    <!-- Scan redirect notice -->
+    <div class="scan-alert" id="scanAlert">
+      <div class="sa-icon">📱</div>
+      <div class="sa-text">
+        <strong>QR Pass Detected</strong>
+        Log in to verify this entry pass automatically.
+      </div>
     </div>
 
     <!-- LOGIN VIEW -->
     <div id="loginView">
       <h1>Staff Portal</h1>
-      <p class="subtitle">Enter your access password to continue to admin tools.</p>
-
-      <label for="passwordInput">Access Password</label>
-      <input
-        type="password"
-        id="passwordInput"
-        placeholder="Enter password"
-        autocomplete="current-password"
-        onkeydown="if(event.key==='Enter') checkPassword()"
-      >
-      <div class="error-msg" id="errorMsg"></div>
-
+      <p class="subtitle" id="loginSubtitle">Enter your access password to continue.</p>
+      <label>Access Password</label>
+      <input type="password" id="passwordInput" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')checkPassword()">
+      <div class="err-msg" id="errorMsg"></div>
       <button class="login-btn" onclick="checkPassword()">Enter Portal →</button>
-      <div class="attempts-hint" id="attemptsHint"></div>
+      <div class="attempts" id="attemptsHint"></div>
     </div>
 
-    <!-- PORTAL VIEW (after login) -->
+    <!-- PORTAL VIEW -->
     <div id="portalView">
       <h1>Staff Tools</h1>
       <p class="subtitle">Select a tool to continue.</p>
-
-      <div class="portal-grid">
-        <a href="/admin" class="portal-card">
-          <div class="portal-card-icon green">📋</div>
+      <div class="grid">
+        <a href="/admin" class="pc" id="adminCard">
+          <div class="pc-icon g">📋</div>
           <h3>Admin Panel</h3>
-          <p>View all visitor logs, approvals, and history</p>
+          <p>View all visitor logs and history</p>
         </a>
-        <a href="/scan.html" class="portal-card">
-          <div class="portal-card-icon blue">🔍</div>
+        <a href="/scan.html" class="pc" id="scanCard">
+          <div class="pc-icon b">🔍</div>
           <h3>Security Scan</h3>
           <p>Verify entry passes at security gate</p>
         </a>
       </div>
-
       <div class="logout-row">
         <button class="logout-btn" onclick="logout()">⊗ Lock Portal</button>
       </div>
     </div>
 
-    <a href="/" class="back-link">← Back to Registration</a>
+    <a href="/" class="back">← Back to Registration</a>
   </div>
 
   <script>
     // ─────────────────────────────────────────
-    // CONFIGURATION — change this password
+    // CONFIG — Change this password!
     // ─────────────────────────────────────────
     const STAFF_PASSWORD = 'visitoros2026';
 
-    let attempts = 0;
-    const MAX_ATTEMPTS = 5;
-    let lockoutUntil = 0;
+    // Check for QR visitor param in URL
+    // QR codes link to: /staff.html?v=VISITOR_ID
+    // After login, user is redirected to /scan.html?v=VISITOR_ID for auto-verify
+    const params    = new URLSearchParams(window.location.search);
+    const visitorId = params.get('v');
 
-    // Check if already logged in this session
+    let attempts    = 0;
+    const MAX_ATT   = 5;
+    let lockUntil   = 0;
+
     window.addEventListener('load', () => {
+      if (visitorId) {
+        // QR redirect mode
+        document.getElementById('scanAlert').classList.add('visible');
+        document.getElementById('loginSubtitle').textContent = 'Log in to verify this visitor\'s entry pass.';
+      }
+
       if (sessionStorage.getItem('staff_auth') === 'true') {
         showPortal();
       }
@@ -246,22 +155,13 @@
 
     function checkPassword() {
       const now = Date.now();
-
-      // Check lockout
-      if (now < lockoutUntil) {
-        const secs = Math.ceil((lockoutUntil - now) / 1000);
-        showError(`Too many attempts. Try again in ${secs}s.`);
+      if (now < lockUntil) {
+        const s = Math.ceil((lockUntil - now) / 1000);
+        showError(`Locked. Try again in ${s}s.`);
         return;
       }
-
-      const input = document.getElementById('passwordInput');
-      const val = input.value.trim();
-
-      if (!val) {
-        showError('Please enter a password.');
-        shakeInput();
-        return;
-      }
+      const val = document.getElementById('passwordInput').value.trim();
+      if (!val) { showError('Please enter a password.'); shakeInput(); return; }
 
       if (val === STAFF_PASSWORD) {
         attempts = 0;
@@ -269,52 +169,53 @@
         showPortal();
       } else {
         attempts++;
-        input.value = '';
+        document.getElementById('passwordInput').value = '';
         shakeInput();
-
-        if (attempts >= MAX_ATTEMPTS) {
-          lockoutUntil = Date.now() + 60000; // 60 second lockout
-          showError('Too many attempts. Locked for 60 seconds.');
-          startLockoutTimer();
+        if (attempts >= MAX_ATT) {
+          lockUntil = Date.now() + 60000;
+          showError('Too many attempts. Locked for 60s.');
+          startLockTimer();
         } else {
-          const remaining = MAX_ATTEMPTS - attempts;
-          showError(`Incorrect password. ${remaining} attempt${remaining !== 1 ? 's' : ''} remaining.`);
-          document.getElementById('attemptsHint').textContent = '';
+          const left = MAX_ATT - attempts;
+          showError(`Incorrect. ${left} attempt${left!==1?'s':''} remaining.`);
         }
       }
     }
 
-    function startLockoutTimer() {
-      const interval = setInterval(() => {
+    function startLockTimer() {
+      const iv = setInterval(() => {
         const now = Date.now();
-        if (now >= lockoutUntil) {
-          clearInterval(interval);
-          showError('');
-          attempts = 0;
-          document.getElementById('attemptsHint').textContent = '';
-        } else {
-          const secs = Math.ceil((lockoutUntil - now) / 1000);
-          showError(`Too many attempts. Try again in ${secs}s.`);
-        }
+        if (now >= lockUntil) { clearInterval(iv); showError(''); attempts = 0; }
+        else { const s = Math.ceil((lockUntil-now)/1000); showError(`Locked. Try again in ${s}s.`); }
       }, 1000);
     }
 
-    function showError(msg) {
-      document.getElementById('errorMsg').textContent = msg;
-    }
+    function showError(msg) { document.getElementById('errorMsg').textContent = msg; }
 
     function shakeInput() {
-      const input = document.getElementById('passwordInput');
-      input.classList.remove('shake');
-      void input.offsetWidth; // reflow
-      input.classList.add('shake');
-      input.addEventListener('animationend', () => input.classList.remove('shake'), { once: true });
+      const i = document.getElementById('passwordInput');
+      i.classList.remove('shake');
+      void i.offsetWidth;
+      i.classList.add('shake');
+      i.addEventListener('animationend', () => i.classList.remove('shake'), { once: true });
     }
 
     function showPortal() {
       document.getElementById('loginView').style.display = 'none';
-      const portal = document.getElementById('portalView');
-      portal.classList.add('visible');
+      document.getElementById('portalView').classList.add('visible');
+
+      // If came from QR scan, highlight scan card and update its href
+      if (visitorId) {
+        const scanCard = document.getElementById('scanCard');
+        scanCard.classList.add('highlight');
+        scanCard.href = `/scan.html?v=${encodeURIComponent(visitorId)}`;
+        scanCard.querySelector('p').textContent = 'Tap to verify the scanned pass now';
+
+        // Auto-redirect to scan after short delay
+        setTimeout(() => {
+          window.location.href = `/scan.html?v=${encodeURIComponent(visitorId)}`;
+        }, 1200);
+      }
     }
 
     function logout() {
