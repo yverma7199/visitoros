@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Portal — VisitorOS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f7f4ef;
+      --surface: #ffffff;
+      --border: #e4ddd4;
+      --text: #1a1510;
+      --text-muted: #6b6055;
+      --text-dim: #a89e93;
+      --accent: #2c4a3e;
+      --accent-warm: #c4622d;
+      --error: #c0392b;
+      --shadow: 0 2px 16px rgba(26,21,16,0.07);
+      --shadow-lg: 0 8px 40px rgba(26,21,16,0.12);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    /* Paper noise */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+      opacity: 0.6; pointer-events: none; z-index: 0;
+    }
+
+    .card {
+      position: relative; z-index: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: var(--shadow-lg);
+      animation: fadeUp .5s ease;
+    }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+    .logo-row {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 32px;
+    }
+    .logo-icon {
+      width: 34px; height: 34px; background: var(--accent);
+      border-radius: 9px; display: flex; align-items: center; justify-content: center; color: #fff;
+    }
+    .logo-text { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--text); }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px; font-weight: 700;
+      color: var(--text); margin-bottom: 8px;
+      letter-spacing: -.5px;
+    }
+    .subtitle {
+      font-size: 14px; color: var(--text-muted); margin-bottom: 32px; line-height: 1.5;
+    }
+
+    /* Login form */
+    #loginView label {
+      display: block; font-size: 12px; font-weight: 500;
+      color: var(--text-muted); margin-bottom: 7px; letter-spacing: .3px;
+    }
+    #loginView input {
+      width: 100%; background: #faf8f5; border: 1.5px solid var(--border);
+      border-radius: 10px; color: var(--text); font-family: 'DM Sans', sans-serif;
+      font-size: 15px; padding: 11px 14px; outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    #loginView input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(44,74,62,.08);
+    }
+    #loginView input.shake {
+      animation: shake .35s ease;
+      border-color: var(--error);
+    }
+    @keyframes shake {
+      0%,100%{transform:translateX(0)}
+      20%{transform:translateX(-6px)}
+      40%{transform:translateX(6px)}
+      60%{transform:translateX(-4px)}
+      80%{transform:translateX(4px)}
+    }
+
+    .error-msg {
+      font-size: 12px; color: var(--error);
+      font-family: 'DM Mono', monospace;
+      min-height: 18px; margin-top: 7px;
+    }
+
+    .login-btn {
+      width: 100%; margin-top: 20px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px; font-weight: 600;
+      padding: 13px; cursor: pointer;
+      transition: background .15s, transform .15s, box-shadow .15s;
+      box-shadow: 0 4px 16px rgba(44,74,62,.2);
+    }
+    .login-btn:hover { background: #1e3329; transform: translateY(-1px); box-shadow: 0 6px 22px rgba(44,74,62,.28); }
+    .login-btn:active { transform: translateY(0); }
+
+    /* Portal - after login */
+    #portalView { display: none; }
+    #portalView.visible { display: block; animation: fadeUp .35s ease; }
+
+    .portal-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px;
+    }
+
+    .portal-card {
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 24px 20px;
+      text-decoration: none;
+      color: var(--text);
+      transition: border-color .2s, box-shadow .2s, transform .15s;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .portal-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 20px rgba(44,74,62,.1);
+      transform: translateY(-2px);
+    }
+    .portal-card-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+    .portal-card-icon.green { background: rgba(44,122,75,.1); }
+    .portal-card-icon.blue { background: rgba(44,74,100,.1); }
+    .portal-card h3 { font-size: 15px; font-weight: 600; color: var(--text); }
+    .portal-card p { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+
+    .logout-row {
+      margin-top: 20px; text-align: center;
+    }
+    .logout-btn {
+      background: none; border: none; color: var(--text-dim);
+      font-family: 'DM Mono', monospace; font-size: 12px;
+      cursor: pointer; transition: color .2s; padding: 4px 8px;
+    }
+    .logout-btn:hover { color: var(--accent-warm); }
+
+    .back-link {
+      display: block; text-align: center; margin-top: 20px;
+      font-size: 13px; color: var(--text-dim); text-decoration: none;
+      font-family: 'DM Mono', monospace; transition: color .2s;
+    }
+    .back-link:hover { color: var(--accent); }
+
+    .attempts-hint {
+      font-size: 11px; color: var(--text-dim);
+      font-family: 'DM Mono', monospace;
+      text-align: center; margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo-row">
+      <div class="logo-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <span class="logo-text">VisitorOS</span>
+    </div>
+
+    <!-- LOGIN VIEW -->
+    <div id="loginView">
+      <h1>Staff Portal</h1>
+      <p class="subtitle">Enter your access password to continue to admin tools.</p>
+
+      <label for="passwordInput">Access Password</label>
+      <input
+        type="password"
+        id="passwordInput"
+        placeholder="Enter password"
+        autocomplete="current-password"
+        onkeydown="if(event.key==='Enter') checkPassword()"
+      >
+      <div class="error-msg" id="errorMsg"></div>
+
+      <button class="login-btn" onclick="checkPassword()">Enter Portal →</button>
+      <div class="attempts-hint" id="attemptsHint"></div>
+    </div>
+
+    <!-- PORTAL VIEW (after login) -->
+    <div id="portalView">
+      <h1>Staff Tools</h1>
+      <p class="subtitle">Select a tool to continue.</p>
+
+      <div class="portal-grid">
+        <a href="/admin" class="portal-card">
+          <div class="portal-card-icon green">📋</div>
+          <h3>Admin Panel</h3>
+          <p>View all visitor logs, approvals, and history</p>
+        </a>
+        <a href="/scan.html" class="portal-card">
+          <div class="portal-card-icon blue">🔍</div>
+          <h3>Security Scan</h3>
+          <p>Verify entry passes at security gate</p>
+        </a>
+      </div>
+
+      <div class="logout-row">
+        <button class="logout-btn" onclick="logout()">⊗ Lock Portal</button>
+      </div>
+    </div>
+
+    <a href="/" class="back-link">← Back to Registration</a>
+  </div>
+
+  <script>
+    // ─────────────────────────────────────────
+    // CONFIGURATION — change this password
+    // ─────────────────────────────────────────
+    const STAFF_PASSWORD = 'visitoros2026';
+
+    let attempts = 0;
+    const MAX_ATTEMPTS = 5;
+    let lockoutUntil = 0;
+
+    // Check if already logged in this session
+    window.addEventListener('load', () => {
+      if (sessionStorage.getItem('staff_auth') === 'true') {
+        showPortal();
+      }
+    });
+
+    function checkPassword() {
+      const now = Date.now();
+
+      // Check lockout
+      if (now < lockoutUntil) {
+        const secs = Math.ceil((lockoutUntil - now) / 1000);
+        showError(`Too many attempts. Try again in ${secs}s.`);
+        return;
+      }
+
+      const input = document.getElementById('passwordInput');
+      const val = input.value.trim();
+
+      if (!val) {
+        showError('Please enter a password.');
+        shakeInput();
+        return;
+      }
+
+      if (val === STAFF_PASSWORD) {
+        attempts = 0;
+        sessionStorage.setItem('staff_auth', 'true');
+        showPortal();
+      } else {
+        attempts++;
+        input.value = '';
+        shakeInput();
+
+        if (attempts >= MAX_ATTEMPTS) {
+          lockoutUntil = Date.now() + 60000; // 60 second lockout
+          showError('Too many attempts. Locked for 60 seconds.');
+          startLockoutTimer();
+        } else {
+          const remaining = MAX_ATTEMPTS - attempts;
+          showError(`Incorrect password. ${remaining} attempt${remaining !== 1 ? 's' : ''} remaining.`);
+          document.getElementById('attemptsHint').textContent = '';
+        }
+      }
+    }
+
+    function startLockoutTimer() {
+      const interval = setInterval(() => {
+        const now = Date.now();
+        if (now >= lockoutUntil) {
+          clearInterval(interval);
+          showError('');
+          attempts = 0;
+          document.getElementById('attemptsHint').textContent = '';
+        } else {
+          const secs = Math.ceil((lockoutUntil - now) / 1000);
+          showError(`Too many attempts. Try again in ${secs}s.`);
+        }
+      }, 1000);
+    }
+
+    function showError(msg) {
+      document.getElementById('errorMsg').textContent = msg;
+    }
+
+    function shakeInput() {
+      const input = document.getElementById('passwordInput');
+      input.classList.remove('shake');
+      void input.offsetWidth; // reflow
+      input.classList.add('shake');
+      input.addEventListener('animationend', () => input.classList.remove('shake'), { once: true });
+    }
+
+    function showPortal() {
+      document.getElementById('loginView').style.display = 'none';
+      const portal = document.getElementById('portalView');
+      portal.classList.add('visible');
+    }
+
+    function logout() {
+      sessionStorage.removeItem('staff_auth');
+      document.getElementById('loginView').style.display = 'block';
+      document.getElementById('portalView').classList.remove('visible');
+      document.getElementById('passwordInput').value = '';
+      showError('');
+    }
+  </script>
+</body>
+</html>

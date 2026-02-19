@@ -5,21 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Visitor Registration — VisitorOS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne+Mono&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="bg-grid"></div>
-  <div class="glow glow-1"></div>
-  <div class="glow glow-2"></div>
+  <div class="paper-texture"></div>
 
   <main class="container">
     <!-- Header -->
     <header class="site-header">
       <div class="logo-mark">
         <div class="logo-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
         <span class="logo-text">VisitorOS</span>
@@ -33,108 +31,94 @@
     <!-- Hero -->
     <div class="hero">
       <div class="hero-tag">Secure Visitor Registration</div>
-      <h1 class="hero-title">Welcome.<br>Register <span class="accent">your visit.</span></h1>
+      <h1 class="hero-title">Welcome.<br>Register <em>your visit.</em></h1>
       <p class="hero-sub">Fill in the details below. Your host will receive an instant WhatsApp approval request.</p>
     </div>
 
     <!-- FORM -->
     <form id="visitorForm" novalidate>
 
-      <!-- ── PHOTO CAPTURE ── -->
+      <!-- PHOTO CAPTURE -->
       <div class="form-card" id="photoCard">
-        <div class="card-section-label">Visitor Photo <span style="color:#7c6af0;font-size:10px;letter-spacing:1px;">(REQUIRED)</span></div>
+        <div class="card-label">Visitor Photo <span class="required-tag">Required</span></div>
         <div class="photo-capture-area" id="photoCaptureArea">
 
-          <!-- Step 1: Initial prompt -->
           <div class="photo-step" id="photoPrompt">
             <div class="photo-placeholder">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M20 7h-2.5l-1.5-2H8L6.5 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" stroke="currentColor" stroke-width="1.5"/></svg>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M20 7h-2.5l-1.5-2H8L6.5 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" stroke="currentColor" stroke-width="1.5"/></svg>
             </div>
             <p class="photo-hint">A photo is required for security verification.</p>
             <div class="photo-btns">
               <button type="button" class="photo-btn primary" id="openCameraBtn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/><path d="M20 7h-2.5l-1.5-2H8L6.5 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" stroke="currentColor" stroke-width="2"/></svg>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/><path d="M20 7h-2.5l-1.5-2H8L6.5 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" stroke="currentColor" stroke-width="2"/></svg>
                 Open Camera
               </button>
               <button type="button" class="photo-btn secondary" id="uploadPhotoBtn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 Upload Photo
               </button>
             </div>
             <input type="file" id="photoFileInput" accept="image/*" capture="user" style="display:none">
           </div>
 
-          <!-- Step 2: Camera preview -->
           <div class="photo-step" id="cameraStep" style="display:none">
             <div class="camera-container">
               <video id="cameraVideo" autoplay playsinline muted></video>
-              <div class="camera-overlay">
-                <div class="face-guide"></div>
-              </div>
+              <div class="camera-overlay"><div class="face-guide"></div></div>
             </div>
             <div class="camera-controls">
               <button type="button" class="photo-btn secondary" id="cancelCameraBtn">Cancel</button>
-              <button type="button" class="photo-btn capture-btn" id="captureBtn">
-                <span class="capture-ring"></span>
-              </button>
-              <button type="button" class="photo-btn secondary" id="flipCameraBtn" title="Flip camera">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M1 4v6h6M23 20v-6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <button type="button" class="capture-btn" id="captureBtn"><span class="capture-ring"></span></button>
+              <button type="button" class="photo-btn secondary" id="flipCameraBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M1 4v6h6M23 20v-6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
             </div>
           </div>
 
-          <!-- Step 3: Preview captured photo -->
           <div class="photo-step" id="photoPreviewStep" style="display:none">
             <div class="photo-preview-wrap">
               <img id="capturedPhotoImg" src="" alt="Captured photo">
               <div class="photo-preview-badge">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="20,6 9,17 4,12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Photo captured
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><polyline points="20,6 9,17 4,12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Captured
               </div>
             </div>
-            <button type="button" class="photo-btn secondary retake-btn" id="retakeBtn">↺ Retake Photo</button>
+            <button type="button" class="photo-btn secondary" id="retakeBtn">↺ Retake</button>
           </div>
-
         </div>
         <span class="field-error" id="err-photo"></span>
-        <!-- Hidden canvas for capture -->
         <canvas id="captureCanvas" style="display:none"></canvas>
-        <!-- Stores base64 data -->
         <input type="hidden" id="photo_base64" name="photo_base64">
       </div>
 
-      <!-- ── PERSONAL INFO ── -->
+      <!-- PERSONAL INFO -->
       <div class="form-card">
-        <div class="card-section-label">Personal Information</div>
-
+        <div class="card-label">Personal Information</div>
         <div class="field-group two-col">
           <div class="field">
             <label for="visitor_name">Full Name <span class="req">*</span></label>
-            <input type="text" id="visitor_name" name="visitor_name" placeholder="John Smith" autocomplete="name" required>
+            <input type="text" id="visitor_name" placeholder="John Smith" autocomplete="name" required>
             <span class="field-error" id="err-name"></span>
           </div>
           <div class="field">
             <label for="visitor_mobile">Mobile Number <span class="req">*</span></label>
-            <input type="tel" id="visitor_mobile" name="visitor_mobile" placeholder="+91 98765 43210" autocomplete="tel" required>
+            <input type="tel" id="visitor_mobile" placeholder="+91 98765 43210" autocomplete="tel" required>
             <span class="field-error" id="err-mobile"></span>
           </div>
         </div>
-
-        <div class="field" style="margin-top:16px">
+        <div class="field mt-16">
           <label for="visitor_email">Email Address</label>
-          <input type="email" id="visitor_email" name="visitor_email" placeholder="john@example.com" autocomplete="email">
-          <span class="field-error" id="err-email"></span>
+          <input type="email" id="visitor_email" placeholder="john@example.com" autocomplete="email">
         </div>
       </div>
 
-      <!-- ── VISIT DETAILS ── -->
+      <!-- VISIT DETAILS -->
       <div class="form-card">
-        <div class="card-section-label">Visit Details</div>
-
+        <div class="card-label">Visit Details</div>
         <div class="field">
           <label for="purpose">Purpose of Visit <span class="req">*</span></label>
           <div class="select-wrap">
-            <select id="purpose" name="purpose" required>
+            <select id="purpose" required>
               <option value="">— Select purpose —</option>
               <option>Business Meeting</option>
               <option>Interview</option>
@@ -144,52 +128,52 @@
               <option>Personal</option>
               <option>Other</option>
             </select>
-            <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <span class="field-error" id="err-purpose"></span>
         </div>
 
-        <div class="field" style="margin-top:16px">
+        <div class="field mt-16">
           <label for="person_to_meet">Person to Meet <span class="req">*</span></label>
-          <div class="select-wrap" id="personSelectWrap">
-            <select id="person_to_meet" name="person_to_meet" required>
-              <option value="">— Loading people… —</option>
+          <div class="select-wrap">
+            <select id="person_to_meet" required>
+              <option value="">— Loading… —</option>
             </select>
-            <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <button type="button" class="reload-people-btn" id="reloadPeopleBtn" title="Retry loading people" style="display:none">↺</button>
+            <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <button type="button" class="reload-btn" id="reloadPeopleBtn" title="Retry" style="display:none">↺</button>
           </div>
           <span class="field-error" id="err-person"></span>
-          <span class="field-hint" id="hint-person" style="font-size:11px;color:#3d3d55;font-family:'Syne Mono',monospace;"></span>
+          <span class="field-hint" id="hint-person"></span>
         </div>
 
-        <div class="field-group two-col" style="margin-top:16px">
+        <div class="field-group two-col mt-16">
           <div class="field">
             <label for="visit_date">Visit Date <span class="req">*</span></label>
-            <input type="date" id="visit_date" name="visit_date" required>
+            <input type="date" id="visit_date" required>
             <span class="field-error" id="err-date"></span>
           </div>
           <div class="field">
             <label for="visit_time">Visit Time <span class="req">*</span></label>
-            <input type="time" id="visit_time" name="visit_time" required>
+            <input type="time" id="visit_time" required>
             <span class="field-error" id="err-time"></span>
           </div>
         </div>
       </div>
 
-      <!-- ── SUBMIT ── -->
+      <!-- SUBMIT -->
       <button type="submit" class="submit-btn" id="submitBtn">
         <span class="btn-text">Register Visit</span>
         <span class="btn-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </span>
         <div class="btn-loader" id="btnLoader"></div>
       </button>
     </form>
 
-    <!-- ── SUCCESS STATE ── -->
+    <!-- SUCCESS STATE -->
     <div class="success-panel" id="successPanel">
       <div class="success-icon">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="22,4 12,14.01 9,11.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="22,4 12,14.01 9,11.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
       <h2>Registration Successful!</h2>
       <p>Your visit request has been sent to your host for approval.<br>You'll receive a WhatsApp message once approved.</p>
@@ -197,18 +181,16 @@
       <button class="new-btn" onclick="resetForm()">Register Another Visit</button>
     </div>
 
-    <!-- ── ERROR TOAST ── -->
+    <!-- ERROR TOAST -->
     <div class="toast" id="errorToast">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2"/><line x1="12" y1="16" x2="12.01" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2"/><line x1="12" y1="16" x2="12.01" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       <span id="toastMsg"></span>
     </div>
 
     <footer class="site-footer">
-      <a href="/admin">Admin Panel →</a>
-      <span>·</span>
-      <a href="/scan.html">Security Scan →</a>
-      <span>·</span>
       <span>VisitorOS v2</span>
+      <span>·</span>
+      <span style="font-size:11px;color:#bbb;">Staff access via separate portal</span>
     </footer>
   </main>
 
