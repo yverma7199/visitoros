@@ -98,9 +98,11 @@ module.exports = async (req, res) => {
     // from treating numbers like 8708801547 as a formula (causing #ERROR!)
     // We store as plain string by prepending a tab character in RAW mode
     // ─────────────────────────────────────────
-    // Clean the mobile — strip spaces/dashes, keep + and digits
-    const cleanMobile = String(visitor_mobile).replace(/[^\d+]/g, '');
-    const cleanApprover = String(approver_mobile).replace(/[^\d+]/g, '');
+    // Clean the mobile — digits only (no +), stored as plain number string
+    // We strip + because in RAW mode, +91... is interpreted as a formula by Sheets
+    // The number is still perfectly usable for WhatsApp (which expects digits only anyway)
+    const cleanMobile   = String(visitor_mobile).replace(/[^\d]/g, '');
+    const cleanApprover = String(approver_mobile).replace(/[^\d]/g, '');
 
     // Upload photo
     let photo_url = '';
@@ -111,12 +113,13 @@ module.exports = async (req, res) => {
     const rowData = [
       visitor_id,
       visitor_name,
-      // FIX: Prefix with ' (apostrophe) forces Google Sheets to treat as text
-      `'${cleanMobile}`,
+      // Store as plain digits — no apostrophe prefix needed since number-only strings
+      // don't trigger formula errors in RAW mode (only +/= prefixed strings do)
+      cleanMobile,
       visitor_email || '',
       purpose,
       person_to_meet,
-      `'${cleanApprover}`,
+      cleanApprover,
       visit_date,
       visit_time,
       photo_url,

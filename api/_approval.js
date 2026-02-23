@@ -70,9 +70,14 @@ async function handleApproval(visitorId, res) {
     const passLink    = `${BASE_URL}/pass/${visitorId}`;
     const approvalTime = new Date().toISOString();
 
+    // Strip apostrophe prefix from phone numbers in case old records have it
+    // Also strip + and spaces — WhatsApp API needs digits only (e.g. 918168879409)
+    const cleanMobile = String(visitor.visitor_mobile).replace(/[^\d]/g, '');
+
     console.log('[Approval] BASE_URL:', BASE_URL);
     console.log('[Approval] Pass link:', passLink);
-    console.log('[Approval] Visitor mobile:', visitor.visitor_mobile);
+    console.log('[Approval] Visitor mobile raw:', visitor.visitor_mobile);
+    console.log('[Approval] Visitor mobile clean:', cleanMobile);
 
     // Update sheet first
     await updateRowByColumn(VISITORS_SHEET, 'visitor_id', visitorId, {
@@ -83,10 +88,10 @@ async function handleApproval(visitorId, res) {
 
     console.log('[Approval] Sheet updated ✓');
 
-    // Send pass via WhatsApp — log ALL errors in detail
+    // Send pass via WhatsApp — use cleanMobile (digits only, no apostrophe/+)
     try {
-      await sendPassToVisitor(visitor.visitor_mobile, visitor, passLink);
-      console.log('[Approval] ✅ Pass sent to', visitor.visitor_mobile);
+      await sendPassToVisitor(cleanMobile, visitor, passLink);
+      console.log('[Approval] ✅ Pass sent to', cleanMobile);
     } catch (waErr) {
       // Print the FULL Meta error so we can see exactly what's wrong
       const metaErr = waErr.response?.data?.error;
@@ -123,14 +128,16 @@ async function handleRejection(visitorId, res) {
       return res?.status(200).send(htmlPage('Already Processed', { icon: 'ℹ️', text: `Status is already <strong>${visitor.status}</strong>.` }, '#6b6055'));
     }
 
+    const cleanMobile = String(visitor.visitor_mobile).replace(/[^\d]/g, '');
+
     await updateRowByColumn(VISITORS_SHEET, 'visitor_id', visitorId, {
       status: 'REJECTED',
       approval_time: new Date().toISOString(),
     });
 
     try {
-      await sendRejectionNotice(visitor.visitor_mobile, visitor.visitor_name);
-      console.log('[Rejection] Rejection notice sent to', visitor.visitor_mobile);
+      await sendRejectionNotice(cleanMobile, visitor.visitor_name);
+      console.log('[Rejection] Rejection notice sent to', cleanMobile);
     } catch (waErr) {
       const metaErr = waErr.response?.data?.error;
       console.error('[Rejection] ❌ WhatsApp FAILED:', JSON.stringify(metaErr || waErr.message));
