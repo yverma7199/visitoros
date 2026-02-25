@@ -1,872 +1,353 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>VisitorOS — Approver Portal</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap"
-    rel="stylesheet">
-  <style>
-    :root {
-      --bg: #f7f4ef;
-      --s: #fff;
-      --s2: #faf8f5;
-      --b: #e4ddd4;
-      --t: #1a1510;
-      --tm: #6b6055;
-      --td: #a89e93;
-      --ac: #2c4a3e;
-      --aw: #c4622d;
-      --ok: #2c7a4b;
-      --err: #c0392b;
-      --warn: #b8860b;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VisitorOS — Approver Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f7f4ef;--s:#fff;--s2:#faf8f5;--b:#e4ddd4;--t:#1a1510;--tm:#6b6055;--td:#a89e93;--ac:#2c4a3e;--aw:#c4622d;--ok:#2c7a4b;--err:#c0392b;--warn:#b8860b;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");}
+
+/* Topbar */
+.bar{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--b);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;}
+.bl{display:flex;align-items:center;gap:10px;}
+.logo{width:28px;height:28px;background:var(--ac);border-radius:6px;display:flex;align-items:center;justify-content:center;}
+.logo svg{width:14px;height:14px;color:#fff;}
+.bname{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;}
+.bbadge{font-size:11px;color:var(--td);border-left:1px solid var(--b);padding-left:10px;margin-left:2px;font-family:'DM Mono',monospace;}
+.br{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--tm);}
+.udot{width:7px;height:7px;background:var(--ok);border-radius:50%;}
+.out-btn{padding:4px 12px;border-radius:6px;border:1.5px solid var(--b);background:transparent;color:var(--tm);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.out-btn:hover{border-color:var(--err);color:var(--err);}
+
+/* Login */
+#ls{position:fixed;inset:0;background:var(--bg);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;}
+.lc{background:var(--s);border:1px solid var(--b);border-radius:20px;padding:44px 38px;max-width:400px;width:100%;box-shadow:0 8px 40px rgba(26,21,16,.1);position:relative;}
+.lc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--ac),var(--aw));border-radius:20px 20px 0 0;}
+.li2{width:48px;height:48px;background:var(--ac);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;}
+.li2 svg{width:22px;height:22px;color:#fff;}
+.lt2{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;margin-bottom:5px;}
+.ls2{font-size:14px;color:var(--tm);margin-bottom:26px;}
+.fi{margin-bottom:14px;}
+.fi label{display:block;font-size:11px;font-family:'DM Mono',monospace;color:var(--td);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;}
+.fi select,.fi input{width:100%;padding:10px 14px;border-radius:8px;border:1.5px solid var(--b);background:var(--s2);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--t);outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none;}
+.fi select:focus,.fi input:focus{border-color:var(--ac);}
+.login-btn{width:100%;padding:12px;border-radius:8px;background:var(--ac);color:#fff;border:none;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:background .15s;margin-top:4px;}
+.login-btn:hover{background:#1e3329;}
+.lerr{color:var(--err);font-size:13px;margin-top:10px;text-align:center;min-height:18px;}
+
+/* Main */
+#ms{display:none;position:relative;z-index:1;}
+.main{padding:24px;max-width:940px;margin:0 auto;}
+.ph2{margin-bottom:18px;}
+.ptitle{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;}
+.psub{font-size:14px;color:var(--tm);margin-top:4px;}
+
+/* Stats */
+.stats{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.stat{background:var(--s);border:1px solid var(--b);border-radius:10px;padding:14px 18px;flex:1;min-width:80px;}
+.sn{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;}
+.sl{font-size:10px;color:var(--td);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:1.5px;margin-top:3px;}
+.stat.p .sn{color:var(--warn);}
+.stat.a .sn{color:var(--ok);}
+.stat.r .sn{color:var(--err);}
+
+/* Toolbar */
+.tb{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+.tb h2{font-family:'Playfair Display',serif;font-size:17px;}
+.tbr{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.ft{padding:4px 12px;border-radius:5px;font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;border:1.5px solid var(--b);background:transparent;color:var(--tm);transition:all .15s;}
+.ft.ac{background:var(--ac);color:#fff;border-color:var(--ac);}
+.ft:hover:not(.ac){border-color:var(--ac);color:var(--ac);}
+.ref-btn{padding:6px 13px;border-radius:7px;border:1.5px solid var(--b);background:var(--s);color:var(--tm);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s;}
+.ref-btn:hover{border-color:var(--ac);color:var(--ac);}
+
+/* Cards */
+.cards{display:grid;gap:11px;}
+.vc{background:var(--s);border:1px solid var(--b);border-radius:13px;padding:16px;display:flex;gap:13px;align-items:flex-start;transition:box-shadow .2s;}
+.vc:hover{box-shadow:0 3px 18px rgba(26,21,16,.07);}
+.vc.PENDING{border-left:3px solid var(--warn);}
+.vc.APPROVED{border-left:3px solid var(--ok);}
+.vc.REJECTED{border-left:3px solid var(--err);}
+.vph{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid var(--b);flex-shrink:0;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden;}
+.vph img{width:100%;height:100%;object-fit:cover;}
+.vb{flex:1;min-width:0;}
+.vn{font-weight:600;font-size:15px;}
+.vm{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;}
+.mp{font-size:11px;font-family:'DM Mono',monospace;color:var(--tm);background:var(--s2);border:1px solid var(--b);border-radius:20px;padding:2px 8px;}
+.va{display:flex;gap:7px;margin-top:11px;flex-wrap:wrap;align-items:center;}
+.aok{padding:8px 18px;border-radius:7px;border:none;background:var(--ok);color:#fff;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s;}
+.aok:hover{background:#1e5c36;}
+.aok:disabled,.ano:disabled{opacity:.5;cursor:not-allowed;}
+.ano{padding:8px 18px;border-radius:7px;border:1.5px solid var(--err);background:transparent;color:var(--err);font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s;}
+.ano:hover{background:var(--err);color:#fff;}
+.alink{padding:7px 12px;border-radius:7px;border:1.5px solid var(--b);background:transparent;color:var(--tm);font-size:11px;font-family:'DM Mono',monospace;text-decoration:none;display:inline-flex;align-items:center;gap:4px;transition:all .15s;}
+.alink:hover{border-color:var(--ac);color:var(--ac);}
+.vs{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.sb{padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;font-family:'DM Mono',monospace;white-space:nowrap;}
+.sb.PENDING{background:rgba(184,134,11,.1);color:var(--warn);}
+.sb.APPROVED{background:rgba(44,122,75,.1);color:var(--ok);}
+.sb.REJECTED{background:rgba(192,57,43,.1);color:var(--err);}
+.scan-info{font-size:10px;font-family:'DM Mono',monospace;color:var(--td);text-align:right;}
+
+.empty{text-align:center;padding:56px 20px;color:var(--td);}
+.empty div:first-child{font-size:38px;margin-bottom:8px;}
+.loading{text-align:center;padding:48px;color:var(--td);font-family:'DM Mono',monospace;font-size:13px;}
+
+/* Toast */
+.toast{position:fixed;bottom:22px;right:22px;z-index:999;background:var(--t);color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;max-width:300px;}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast.ok{background:var(--ok);}
+.toast.err{background:var(--err);}
 
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
-      color: var(--t);
-      min-height: 100vh;
-    }
-
-    /* Noise texture */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-    }
-
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--b);
-      padding: 0 24px;
-      height: 56px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .tl {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .logo {
-      width: 28px;
-      height: 28px;
-      background: var(--ac);
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .logo svg {
-      width: 14px;
-      height: 14px;
-      color: white;
-    }
-
-    .brand {
-      font-family: 'DM Mono', monospace;
-      font-size: 13px;
-      font-weight: 500;
-    }
-
-    .badge {
-      font-size: 11px;
-      color: var(--td);
-      border-left: 1px solid var(--b);
-      padding-left: 10px;
-      margin-left: 2px;
-      font-family: 'DM Mono', monospace;
-    }
-
-    .user-badge {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      color: var(--tm);
-    }
-
-    .user-dot {
-      width: 7px;
-      height: 7px;
-      background: var(--ok);
-      border-radius: 50%;
-    }
-
-    .logout-btn {
-      padding: 4px 12px;
-      border-radius: 6px;
-      border: 1.5px solid var(--b);
-      background: transparent;
-      color: var(--tm);
-      font-size: 12px;
-      cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
-      transition: all .15s;
-    }
-
-    .logout-btn:hover {
-      border-color: var(--err);
-      color: var(--err);
-    }
-
-    /* Login screen */
-    #login-screen {
-      position: fixed;
-      inset: 0;
-      background: var(--bg);
-      z-index: 200;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .login-card {
-      background: var(--s);
-      border: 1px solid var(--b);
-      border-radius: 20px;
-      padding: 48px 40px;
-      max-width: 400px;
-      width: 100%;
-      box-shadow: 0 8px 40px rgba(26, 21, 16, .1);
-      position: relative;
-    }
-
-    .login-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--ac), var(--aw));
-      border-radius: 20px 20px 0 0;
-    }
-
-    .login-logo {
-      width: 48px;
-      height: 48px;
-      background: var(--ac);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 20px;
-    }
-
-    .login-logo svg {
-      width: 22px;
-      height: 22px;
-      color: white;
-    }
-
-    .login-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 26px;
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
-
-    .login-sub {
-      font-size: 14px;
-      color: var(--tm);
-      margin-bottom: 28px;
-    }
-
-    .field {
-      margin-bottom: 16px;
-    }
-
-    .field label {
-      display: block;
-      font-size: 11px;
-      font-family: 'DM Mono', monospace;
-      color: var(--td);
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      margin-bottom: 6px;
-    }
-
-    .field select,
-    .field input {
-      width: 100%;
-      padding: 10px 14px;
-      border-radius: 8px;
-      border: 1.5px solid var(--b);
-      background: var(--s2);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      color: var(--t);
-      outline: none;
-      transition: border-color .2s;
-      appearance: none;
-    }
-
-    .field select:focus,
-    .field input:focus {
-      border-color: var(--ac);
-    }
-
-    .login-btn {
-      width: 100%;
-      padding: 12px;
-      border-radius: 8px;
-      background: var(--ac);
-      color: white;
-      border: none;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background .15s;
-      margin-top: 4px;
-    }
-
-    .login-btn:hover {
-      background: #1e3329;
-    }
-
-    .login-err {
-      color: var(--err);
-      font-size: 13px;
-      margin-top: 10px;
-      text-align: center;
-      min-height: 20px;
-    }
-
-    /* Main content */
-    #main-screen {
-      display: none;
-      position: relative;
-      z-index: 1;
-    }
-
-    .main {
-      padding: 24px;
-      max-width: 960px;
-      margin: 0 auto;
-    }
-
-    .page-header {
-      margin-bottom: 24px;
-    }
-
-    .page-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 28px;
-      font-weight: 700;
-    }
-
-    .page-sub {
-      font-size: 14px;
-      color: var(--tm);
-      margin-top: 4px;
-    }
-
-    .stats {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 24px;
-      flex-wrap: wrap;
-    }
-
-    .stat {
-      background: var(--s);
-      border: 1px solid var(--b);
-      border-radius: 10px;
-      padding: 14px 18px;
-      flex: 1;
-      min-width: 100px;
-    }
-
-    .stat-n {
-      font-family: 'Playfair Display', serif;
-      font-size: 28px;
-      font-weight: 700;
-    }
-
-    .stat-l {
-      font-size: 10px;
-      color: var(--td);
-      font-family: 'DM Mono', monospace;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      margin-top: 3px;
-    }
-
-    .stat.pending .stat-n {
-      color: var(--warn);
-    }
-
-    .stat.approved .stat-n {
-      color: var(--ok);
-    }
-
-    .stat.rejected .stat-n {
-      color: var(--err);
-    }
-
-    .refresh-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 16px;
-    }
-
-    .refresh-bar h2 {
-      font-family: 'Playfair Display', serif;
-      font-size: 18px;
-    }
-
-    .refresh-btn {
-      padding: 6px 14px;
-      border-radius: 7px;
-      border: 1.5px solid var(--b);
-      background: var(--s);
-      color: var(--tm);
-      font-size: 12px;
-      font-family: 'DM Sans', sans-serif;
-      cursor: pointer;
-      transition: all .15s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .refresh-btn:hover {
-      border-color: var(--ac);
-      color: var(--ac);
-    }
-
-    /* Visitor cards */
-    .cards {
-      display: grid;
-      gap: 14px;
-    }
-
-    .card {
-      background: var(--s);
-      border: 1px solid var(--b);
-      border-radius: 14px;
-      padding: 20px;
-      display: flex;
-      gap: 16px;
-      align-items: flex-start;
-      transition: box-shadow .2s;
-    }
-
-    .card:hover {
-      box-shadow: 0 4px 20px rgba(26, 21, 16, .08);
-    }
-
-    .card.approved {
-      border-left: 3px solid var(--ok);
-    }
-
-    .card.rejected {
-      border-left: 3px solid var(--err);
-    }
-
-    .card.pending {
-      border-left: 3px solid var(--warn);
-    }
-
-    .card-photo {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid var(--b);
-      flex-shrink: 0;
-      background: var(--s2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      overflow: hidden;
-    }
-
-    .card-photo img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .card-body {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .card-name {
-      font-weight: 600;
-      font-size: 15px;
-    }
-
-    .card-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 5px;
-    }
-
-    .meta-pill {
-      font-size: 11px;
-      font-family: 'DM Mono', monospace;
-      color: var(--tm);
-      background: var(--s2);
-      border: 1px solid var(--b);
-      border-radius: 20px;
-      padding: 2px 9px;
-    }
-
-    .card-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 12px;
-      flex-wrap: wrap;
-    }
-
-    .btn-approve {
-      padding: 8px 18px;
-      border-radius: 7px;
-      border: none;
-      background: var(--ok);
-      color: white;
-      font-size: 13px;
-      font-weight: 600;
-      font-family: 'DM Sans', sans-serif;
-      cursor: pointer;
-      transition: all .15s;
-    }
-
-    .btn-approve:hover {
-      background: #1e5c36;
-    }
-
-    .btn-reject {
-      padding: 8px 18px;
-      border-radius: 7px;
-      border: 1.5px solid var(--err);
-      background: transparent;
-      color: var(--err);
-      font-size: 13px;
-      font-weight: 600;
-      font-family: 'DM Sans', sans-serif;
-      cursor: pointer;
-      transition: all .15s;
-    }
-
-    .btn-reject:hover {
-      background: var(--err);
-      color: white;
-    }
-
-    .btn-pass {
-      padding: 8px 14px;
-      border-radius: 7px;
-      border: 1.5px solid var(--b);
-      background: transparent;
-      color: var(--tm);
-      font-size: 12px;
-      font-family: 'DM Mono', monospace;
-      cursor: pointer;
-      transition: all .15s;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-    }
-
-    .btn-pass:hover {
-      border-color: var(--ac);
-      color: var(--ac);
-    }
-
-    .card-status {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 6px;
-      flex-shrink: 0;
-    }
-
-    .status-badge {
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 10px;
-      font-weight: 700;
-      font-family: 'DM Mono', monospace;
-      letter-spacing: .5px;
-      white-space: nowrap;
-    }
-
-    .status-badge.PENDING {
-      background: rgba(184, 134, 11, .1);
-      color: var(--warn);
-    }
-
-    .status-badge.APPROVED {
-      background: rgba(44, 122, 75, .1);
-      color: var(--ok);
-    }
-
-    .status-badge.REJECTED {
-      background: rgba(192, 57, 43, .1);
-      color: var(--err);
-    }
-
-    .empty {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--td);
-    }
-
-    .empty div:first-child {
-      font-size: 40px;
-      margin-bottom: 10px;
-    }
-
-    .empty div:last-child {
-      font-size: 14px;
-    }
-
-    .toast {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      z-index: 999;
-      background: var(--t);
-      color: white;
-      padding: 12px 20px;
-      border-radius: 10px;
-      font-size: 13px;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: all .25s;
-      pointer-events: none;
-    }
-
-    .toast.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .toast.ok {
-      background: var(--ok);
-    }
-
-    .toast.err {
-      background: var(--err);
-    }
-
-    .loading {
-      text-align: center;
-      padding: 60px;
-      color: var(--td);
-      font-family: 'DM Mono', monospace;
-      font-size: 13px;
-    }
-
-    @media(max-width: 600px) {
-      .card {
-        flex-direction: column;
-      }
-
-      .card-status {
-        flex-direction: row;
-        align-self: flex-start;
-      }
-
-      .main {
-        padding: 16px;
-      }
-    }
-  </style>
+@media(max-width:560px){.vc{flex-direction:column;}.vs{flex-direction:row;align-self:flex-start;}.main{padding:14px;}.lc{padding:32px 22px;}}
+</style>
 </head>
-
 <body>
 
-  <!-- Login Screen -->
-  <div id="login-screen">
-    <div class="login-card">
-      <div class="login-logo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-        </svg>
-      </div>
-      <div class="login-title">Approver Portal</div>
-      <div class="login-sub">Sign in to review pending visitor requests</div>
-      <div class="field">
-        <label>Your Name</label>
-        <select id="approver-select">
-          <option value="">Select approver...</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Password</label>
-        <input type="password" id="password-input" placeholder="Enter your password" autocomplete="current-password">
-      </div>
-      <button class="login-btn" onclick="doLogin()">Sign In →</button>
-      <div class="login-err" id="login-err"></div>
+<!-- Login screen -->
+<div id="ls">
+  <div class="lc">
+    <div class="li2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+    <div class="lt2">Approver Portal</div>
+    <div class="ls2">Sign in to review visitor requests assigned to you</div>
+    <div class="fi">
+      <label>Your Name</label>
+      <select id="asel"><option value="">Select your name...</option></select>
     </div>
+    <div class="fi">
+      <label>Password</label>
+      <input type="password" id="pwdinp" placeholder="Enter your password" autocomplete="current-password">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Sign In →</button>
+    <div class="lerr" id="lerr"></div>
   </div>
+</div>
 
-  <!-- Main Screen -->
-  <div id="main-screen">
-    <header class="topbar">
-      <div class="tl">
-        <div class="logo">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-          </svg>
-        </div>
-        <span class="brand">VisitorOS</span>
-        <span class="badge" id="top-name"></span>
-      </div>
-      <div class="user-badge">
-        <span class="user-dot"></span>
-        <span id="top-role">Approver</span>
-        <button class="logout-btn" onclick="doLogout()">Sign out</button>
-      </div>
-    </header>
+<!-- Main screen -->
+<div id="ms">
+  <header class="bar">
+    <div class="bl">
+      <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+      <span class="bname">VisitorOS</span>
+      <span class="bbadge" id="topname"></span>
+    </div>
+    <div class="br">
+      <span class="udot"></span>
+      <span>Approver</span>
+      <button class="out-btn" onclick="doLogout()">Sign out</button>
+    </div>
+  </header>
 
-    <div class="main">
-      <div class="page-header">
-        <div class="page-title">Visitor Requests</div>
-        <div class="page-sub" id="page-sub">Showing requests assigned to you</div>
-      </div>
+  <div class="main">
+    <div class="ph2">
+      <div class="ptitle">Visitor Requests</div>
+      <div class="psub" id="psub">Loading...</div>
+    </div>
 
-      <div class="stats">
-        <div class="stat pending">
-          <div class="stat-n" id="s-pending">—</div>
-          <div class="stat-l">Pending</div>
-        </div>
-        <div class="stat approved">
-          <div class="stat-n" id="s-approved">—</div>
-          <div class="stat-l">Approved</div>
-        </div>
-        <div class="stat rejected">
-          <div class="stat-n" id="s-rejected">—</div>
-          <div class="stat-l">Rejected</div>
-        </div>
-      </div>
+    <div class="stats">
+      <div class="stat p"><div class="sn" id="sp">—</div><div class="sl">Pending</div></div>
+      <div class="stat a"><div class="sn" id="sa">—</div><div class="sl">Approved</div></div>
+      <div class="stat r"><div class="sn" id="sr">—</div><div class="sl">Rejected</div></div>
+    </div>
 
-      <div class="refresh-bar">
-        <h2>Pending Approval</h2>
-        <button class="refresh-btn" onclick="loadVisitors()">↺ Refresh</button>
-      </div>
-
-      <div class="cards" id="cards-container">
-        <div class="loading">Loading visitors...</div>
+    <div class="tb">
+      <h2>Requests</h2>
+      <div class="tbr">
+        <button class="ft ac"     onclick="setF('ALL',this)">All</button>
+        <button class="ft"        onclick="setF('PENDING',this)">Pending</button>
+        <button class="ft"        onclick="setF('APPROVED',this)">Approved</button>
+        <button class="ft"        onclick="setF('REJECTED',this)">Rejected</button>
+        <button class="ref-btn"   onclick="loadV()">↺ Refresh</button>
       </div>
     </div>
+
+    <div class="cards" id="cards"></div>
   </div>
+</div>
 
-  <div class="toast" id="toast"></div>
+<div class="toast" id="toast"></div>
 
-  <script>
-    const BASE = '';  // same origin
+<script>
+// ── CONFIGURE APPROVERS ───────────────────────────────────────────
+// mobile must exactly match approver_mobile stored in Google Sheets (digits only)
+const APPROVERS = [
+  { name: 'Manoj Verma', mobile: '918168879409', password: 'manoj123' },
+  { name: 'Yaman Verma', mobile: '918708830157', password: 'yaman123' },
+];
+// ─────────────────────────────────────────────────────────────────
 
-    // ── Approver credentials ──
-    // Add more approvers here: { name, mobile, password }
-    // mobile must match approver_mobile stored in sheets
-    const APPROVERS = [
-      { name: 'Manoj Verma', mobile: '918168879409', password: 'manoj123' },
-      { name: 'Yaman Verma', mobile: '918708830157', password: 'yaman123' },
-    ];
+let me = null, all = [], filt = 'ALL';
 
-    let currentApprover = null;
+window.onload = () => {
+  // Populate dropdown
+  const sel = document.getElementById('asel');
+  APPROVERS.forEach((a,i) => {
+    const o = document.createElement('option');
+    o.value = i; o.textContent = a.name; sel.appendChild(o);
+  });
 
-    // ── Populate dropdown ──
-    window.onload = () => {
-      const sel = document.getElementById('approver-select');
-      APPROVERS.forEach((a, i) => {
-        const opt = document.createElement('option');
-        opt.value = i;
-        opt.textContent = a.name;
-        sel.appendChild(opt);
-      });
+  // Restore session
+  try {
+    const s = sessionStorage.getItem('vos_me');
+    if (s) { me = JSON.parse(s); showMain(); }
+  } catch(e) {}
 
-      // Check session
-      const saved = sessionStorage.getItem('approver');
-      if (saved) {
-        currentApprover = JSON.parse(saved);
-        showMain();
-      }
+  document.getElementById('pwdinp').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+};
 
-      document.getElementById('password-input').addEventListener('keydown', e => {
-        if (e.key === 'Enter') doLogin();
-      });
-    };
+function doLogin() {
+  const idx = document.getElementById('asel').value;
+  const pwd = document.getElementById('pwdinp').value;
+  const err = document.getElementById('lerr');
+  err.textContent = '';
+  if (!idx)  { err.textContent = 'Please select your name.'; return; }
+  if (!pwd)  { err.textContent = 'Please enter your password.'; return; }
+  const a = APPROVERS[+idx];
+  if (a.password !== pwd) {
+    err.textContent = 'Incorrect password. Try again.';
+    document.getElementById('pwdinp').value = '';
+    return;
+  }
+  me = a;
+  sessionStorage.setItem('vos_me', JSON.stringify(a));
+  showMain();
+}
 
-    function doLogin() {
-      const idx = document.getElementById('approver-select').value;
-      const pwd = document.getElementById('password-input').value;
-      const err = document.getElementById('login-err');
+function doLogout() {
+  sessionStorage.removeItem('vos_me');
+  me = null; all = [];
+  document.getElementById('ms').style.display = 'none';
+  document.getElementById('ls').style.display = 'flex';
+  document.getElementById('pwdinp').value = '';
+}
 
-      if (idx === '') { err.textContent = 'Please select your name'; return; }
-      if (!pwd) { err.textContent = 'Please enter your password'; return; }
+function showMain() {
+  document.getElementById('ls').style.display = 'none';
+  document.getElementById('ms').style.display = 'block';
+  document.getElementById('topname').textContent = me.name;
+  loadV();
+}
 
-      const approver = APPROVERS[parseInt(idx)];
-      if (approver.password !== pwd) {
-        err.textContent = 'Incorrect password. Please try again.';
-        document.getElementById('password-input').value = '';
-        return;
-      }
+async function loadV() {
+  document.getElementById('cards').innerHTML = '<div class="loading">Loading visitor requests...</div>';
+  try {
+    const r = await fetch('/admin-data');
+    if (!r.ok) throw new Error('Server returned ' + r.status + ' — is admin-data.js deployed?');
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error || 'API error');
 
-      currentApprover = approver;
-      sessionStorage.setItem('approver', JSON.stringify(approver));
-      err.textContent = '';
-      showMain();
-    }
+    // Filter to THIS approver's visitors by matching mobile (digits only)
+    const myM = me.mobile.replace(/\D/g, '');
+    all = (d.visitors || []).filter(v =>
+      String(v.approver_mobile || '').replace(/\D/g,'') === myM
+    );
 
-    function doLogout() {
-      sessionStorage.removeItem('approver');
-      currentApprover = null;
-      document.getElementById('main-screen').style.display = 'none';
-      document.getElementById('login-screen').style.display = 'flex';
-      document.getElementById('password-input').value = '';
-    }
+    // Stats
+    document.getElementById('sp').textContent = all.filter(v=>v.status==='PENDING').length;
+    document.getElementById('sa').textContent = all.filter(v=>v.status==='APPROVED').length;
+    document.getElementById('sr').textContent = all.filter(v=>v.status==='REJECTED').length;
+    document.getElementById('psub').textContent =
+      `${all.length} total request${all.length!==1?'s':''} for ${me.name}`;
 
-    function showMain() {
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('main-screen').style.display = 'block';
-      document.getElementById('top-name').textContent = currentApprover.name;
-      loadVisitors();
-    }
+    render();
+  } catch(e) {
+    document.getElementById('cards').innerHTML =
+      `<div class="empty"><div>⚠️</div><div>${e.message}<br><br><button class="ref-btn" onclick="loadV()" style="margin:0 auto;display:block;margin-top:8px">Retry</button></div></div>`;
+    console.error('loadV error:', e);
+  }
+}
 
-    async function loadVisitors() {
-      const container = document.getElementById('cards-container');
-      container.innerHTML = '<div class="loading">Loading...</div>';
+function setF(f, btn) {
+  filt = f;
+  document.querySelectorAll('.ft').forEach(b=>b.classList.remove('ac'));
+  btn.classList.add('ac');
+  render();
+}
 
-      try {
-        const res = await fetch('/admin-data');
-        const data = await res.json();
+function render() {
+  const c = document.getElementById('cards');
+  let list = filt === 'ALL' ? [...all] : all.filter(v=>v.status===filt);
+  // PENDING first, then newest
+  list.sort((a,b) => {
+    if (a.status==='PENDING' && b.status!=='PENDING') return -1;
+    if (a.status!=='PENDING' && b.status==='PENDING') return 1;
+    return new Date(b.visit_date+' '+(b.visit_time||'00:00')) - new Date(a.visit_date+' '+(a.visit_time||'00:00'));
+  });
+  if (!list.length) {
+    c.innerHTML = `<div class="empty"><div>${filt==='PENDING'?'📋':'✅'}</div><div>${filt==='ALL'?'No visitor requests assigned to you yet':'No '+filt.toLowerCase()+' requests'}</div></div>`;
+    return;
+  }
+  c.innerHTML = list.map(card).join('');
+}
 
-        if (!data.success) throw new Error(data.error);
+function card(v) {
+  const ph = v.photo_url
+    ? `<div class="vph"><img src="${v.photo_url}" alt="" onerror="this.parentElement.innerHTML='👤'"></div>`
+    : `<div class="vph">👤</div>`;
 
-        // Filter to only this approver's visitors
-        const mine = data.visitors.filter(v =>
-          String(v.approver_mobile).replace(/\D/g, '') === currentApprover.mobile
-        );
+  let acts = '';
+  if (v.status === 'PENDING') {
+    acts = `<button class="aok" onclick="act('${v.visitor_id}','approve',this)">✓ Approve</button>
+            <button class="ano" onclick="act('${v.visitor_id}','reject',this)">✗ Reject</button>`;
+  } else if (v.status === 'APPROVED') {
+    acts = `<a class="alink" href="/pass/${v.visitor_id}" target="_blank">📄 View Pass</a>
+            <a class="alink" href="/pass/${v.visitor_id}?pdf=1" target="_blank">⬇ PDF</a>`;
+  }
 
-        const pending = mine.filter(v => v.status === 'PENDING').length;
-        const approved = mine.filter(v => v.status === 'APPROVED').length;
-        const rejected = mine.filter(v => v.status === 'REJECTED').length;
+  const scanLine = v.scan_status === 'SCANNED'
+    ? `<div class="scan-info">✅ Entered</div>` : '';
 
-        document.getElementById('s-pending').textContent = pending;
-        document.getElementById('s-approved').textContent = approved;
-        document.getElementById('s-rejected').textContent = rejected;
-        document.getElementById('page-sub').textContent = `${mine.length} total requests assigned to ${currentApprover.name}`;
-
-        // Show pending first, then recent approved/rejected
-        const sorted = [...mine].sort((a, b) => {
-          if (a.status === 'PENDING' && b.status !== 'PENDING') return -1;
-          if (a.status !== 'PENDING' && b.status === 'PENDING') return 1;
-          return 0;
-        });
-
-        if (sorted.length === 0) {
-          container.innerHTML = '<div class="empty"><div>📋</div><div>No visitor requests assigned to you yet</div></div>';
-          return;
-        }
-
-        container.innerHTML = sorted.map(v => renderCard(v)).join('');
-
-      } catch (err) {
-        container.innerHTML = `<div class="empty"><div>⚠️</div><div>Error loading visitors: ${err.message}</div></div>`;
-      }
-    }
-
-    function renderCard(v) {
-      const photo = v.photo_url
-        ? `<div class="card-photo"><img src="${v.photo_url}" alt="" onerror="this.parentElement.textContent='👤'"></div>`
-        : `<div class="card-photo">👤</div>`;
-
-      const actions = v.status === 'PENDING' ? `
-      <button class="btn-approve" onclick="act('${v.visitor_id}','approve',this)">✓ Approve</button>
-      <button class="btn-reject"  onclick="act('${v.visitor_id}','reject',this)">✗ Reject</button>
-    ` : v.status === 'APPROVED' ? `
-      <a class="btn-pass" href="/pass/${v.visitor_id}" target="_blank">View Pass ↗</a>
-    ` : '';
-
-      return `
-    <div class="card ${v.status.toLowerCase()}" id="card-${v.visitor_id}">
-      ${photo}
-      <div class="card-body">
-        <div class="card-name">${v.visitor_name}</div>
-        <div class="card-meta">
-          <span class="meta-pill">📱 ${v.visitor_mobile}</span>
-          <span class="meta-pill">🎯 ${v.purpose}</span>
-          <span class="meta-pill">📅 ${v.visit_date} ${v.visit_time}</span>
-          ${v.visitor_email ? `<span class="meta-pill">✉️ ${v.visitor_email}</span>` : ''}
-        </div>
-        <div class="card-actions">${actions}</div>
+  return `<div class="vc ${v.status}" id="vc-${v.visitor_id}">
+    ${ph}
+    <div class="vb">
+      <div class="vn">${v.visitor_name||'—'}</div>
+      <div class="vm">
+        <span class="mp">📱 ${v.visitor_mobile||'—'}</span>
+        <span class="mp">🎯 ${v.purpose||'—'}</span>
+        <span class="mp">📅 ${v.visit_date||'—'} ${v.visit_time||''}</span>
+        ${v.visitor_email?`<span class="mp">✉️ ${v.visitor_email}</span>`:''}
       </div>
-      <div class="card-status">
-        <span class="status-badge ${v.status}">${v.status}</span>
-      </div>
-    </div>`;
+      <div class="va">${acts}</div>
+    </div>
+    <div class="vs">
+      <span class="sb ${v.status}">${v.status}</span>
+      ${scanLine}
+    </div>
+  </div>`;
+}
+
+async function act(id, action, btn) {
+  const c = document.getElementById('vc-' + id);
+  c.querySelectorAll('button').forEach(b=>b.disabled=true);
+  btn.textContent = action==='approve' ? 'Approving...' : 'Rejecting...';
+  try {
+    const url = action==='approve' ? `/approve/${id}` : `/reject/${id}`;
+    const r = await fetch(url);
+    if (r.ok || r.status < 500) {
+      toast(action==='approve' ? '✅ Approved! Pass sent to visitor.' : '❌ Visitor rejected.', action==='approve'?'ok':'err');
+      setTimeout(loadV, 1400);
+    } else {
+      throw new Error('Server error ' + r.status);
     }
+  } catch(e) {
+    toast('Error: ' + e.message, 'err');
+    c.querySelectorAll('button').forEach(b=>b.disabled=false);
+    btn.textContent = action==='approve' ? '✓ Approve' : '✗ Reject';
+  }
+}
 
-    async function act(visitorId, action, btn) {
-      btn.disabled = true;
-      btn.textContent = action === 'approve' ? 'Approving...' : 'Rejecting...';
+function toast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast', 3500);
+}
 
-      try {
-        const url = action === 'approve' ? `/approve/${visitorId}` : `/reject/${visitorId}`;
-        const res = await fetch(url);
-
-        if (res.ok) {
-          showToast(action === 'approve' ? '✅ Visitor approved! Pass sent.' : '❌ Visitor rejected.', action === 'approve' ? 'ok' : 'err');
-          // Reload after short delay
-          setTimeout(loadVisitors, 1200);
-        } else {
-          const text = await res.text();
-          showToast('Error: ' + text.slice(0, 80), 'err');
-          btn.disabled = false;
-          btn.textContent = action === 'approve' ? '✓ Approve' : '✗ Reject';
-        }
-      } catch (err) {
-        showToast('Network error: ' + err.message, 'err');
-        btn.disabled = false;
-      }
-    }
-
-    function showToast(msg, type = '') {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.className = 'toast show ' + type;
-      setTimeout(() => t.className = 'toast', 3000);
-    }
-
-    // Auto-refresh every 30 seconds when on main screen
-    setInterval(() => {
-      if (currentApprover) loadVisitors();
-    }, 30000);
-  </script>
+// Auto-refresh every 30s
+setInterval(() => { if(me) loadV(); }, 30000);
+</script>
 </body>
-
 </html>
