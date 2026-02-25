@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>VisitorOS — Approver Portal</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f7f4ef;
+      --s: #fff;
+      --s2: #faf8f5;
+      --b: #e4ddd4;
+      --t: #1a1510;
+      --tm: #6b6055;
+      --td: #a89e93;
+      --ac: #2c4a3e;
+      --aw: #c4622d;
+      --ok: #2c7a4b;
+      --err: #c0392b;
+      --warn: #b8860b;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--t);
+      min-height: 100vh;
+    }
+
+    /* Noise texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--b);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .tl {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo {
+      width: 28px;
+      height: 28px;
+      background: var(--ac);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo svg {
+      width: 14px;
+      height: 14px;
+      color: white;
+    }
+
+    .brand {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .badge {
+      font-size: 11px;
+      color: var(--td);
+      border-left: 1px solid var(--b);
+      padding-left: 10px;
+      margin-left: 2px;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .user-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--tm);
+    }
+
+    .user-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--ok);
+      border-radius: 50%;
+    }
+
+    .logout-btn {
+      padding: 4px 12px;
+      border-radius: 6px;
+      border: 1.5px solid var(--b);
+      background: transparent;
+      color: var(--tm);
+      font-size: 12px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all .15s;
+    }
+
+    .logout-btn:hover {
+      border-color: var(--err);
+      color: var(--err);
+    }
+
+    /* Login screen */
+    #login-screen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-card {
+      background: var(--s);
+      border: 1px solid var(--b);
+      border-radius: 20px;
+      padding: 48px 40px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 8px 40px rgba(26, 21, 16, .1);
+      position: relative;
+    }
+
+    .login-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--ac), var(--aw));
+      border-radius: 20px 20px 0 0;
+    }
+
+    .login-logo {
+      width: 48px;
+      height: 48px;
+      background: var(--ac);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .login-logo svg {
+      width: 22px;
+      height: 22px;
+      color: white;
+    }
+
+    .login-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .login-sub {
+      font-size: 14px;
+      color: var(--tm);
+      margin-bottom: 28px;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+      color: var(--td);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 6px;
+    }
+
+    .field select,
+    .field input {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1.5px solid var(--b);
+      background: var(--s2);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--t);
+      outline: none;
+      transition: border-color .2s;
+      appearance: none;
+    }
+
+    .field select:focus,
+    .field input:focus {
+      border-color: var(--ac);
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      background: var(--ac);
+      color: white;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+      margin-top: 4px;
+    }
+
+    .login-btn:hover {
+      background: #1e3329;
+    }
+
+    .login-err {
+      color: var(--err);
+      font-size: 13px;
+      margin-top: 10px;
+      text-align: center;
+      min-height: 20px;
+    }
+
+    /* Main content */
+    #main-screen {
+      display: none;
+      position: relative;
+      z-index: 1;
+    }
+
+    .main {
+      padding: 24px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .page-header {
+      margin-bottom: 24px;
+    }
+
+    .page-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .page-sub {
+      font-size: 14px;
+      color: var(--tm);
+      margin-top: 4px;
+    }
+
+    .stats {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      background: var(--s);
+      border: 1px solid var(--b);
+      border-radius: 10px;
+      padding: 14px 18px;
+      flex: 1;
+      min-width: 100px;
+    }
+
+    .stat-n {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .stat-l {
+      font-size: 10px;
+      color: var(--td);
+      font-family: 'DM Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-top: 3px;
+    }
+
+    .stat.pending .stat-n {
+      color: var(--warn);
+    }
+
+    .stat.approved .stat-n {
+      color: var(--ok);
+    }
+
+    .stat.rejected .stat-n {
+      color: var(--err);
+    }
+
+    .refresh-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .refresh-bar h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+    }
+
+    .refresh-btn {
+      padding: 6px 14px;
+      border-radius: 7px;
+      border: 1.5px solid var(--b);
+      background: var(--s);
+      color: var(--tm);
+      font-size: 12px;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: all .15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .refresh-btn:hover {
+      border-color: var(--ac);
+      color: var(--ac);
+    }
+
+    /* Visitor cards */
+    .cards {
+      display: grid;
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--s);
+      border: 1px solid var(--b);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      transition: box-shadow .2s;
+    }
+
+    .card:hover {
+      box-shadow: 0 4px 20px rgba(26, 21, 16, .08);
+    }
+
+    .card.approved {
+      border-left: 3px solid var(--ok);
+    }
+
+    .card.rejected {
+      border-left: 3px solid var(--err);
+    }
+
+    .card.pending {
+      border-left: 3px solid var(--warn);
+    }
+
+    .card-photo {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--b);
+      flex-shrink: 0;
+      background: var(--s2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      overflow: hidden;
+    }
+
+    .card-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .card-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .card-name {
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 5px;
+    }
+
+    .meta-pill {
+      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+      color: var(--tm);
+      background: var(--s2);
+      border: 1px solid var(--b);
+      border-radius: 20px;
+      padding: 2px 9px;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-approve {
+      padding: 8px 18px;
+      border-radius: 7px;
+      border: none;
+      background: var(--ok);
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .btn-approve:hover {
+      background: #1e5c36;
+    }
+
+    .btn-reject {
+      padding: 8px 18px;
+      border-radius: 7px;
+      border: 1.5px solid var(--err);
+      background: transparent;
+      color: var(--err);
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .btn-reject:hover {
+      background: var(--err);
+      color: white;
+    }
+
+    .btn-pass {
+      padding: 8px 14px;
+      border-radius: 7px;
+      border: 1.5px solid var(--b);
+      background: transparent;
+      color: var(--tm);
+      font-size: 12px;
+      font-family: 'DM Mono', monospace;
+      cursor: pointer;
+      transition: all .15s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .btn-pass:hover {
+      border-color: var(--ac);
+      color: var(--ac);
+    }
+
+    .card-status {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: 'DM Mono', monospace;
+      letter-spacing: .5px;
+      white-space: nowrap;
+    }
+
+    .status-badge.PENDING {
+      background: rgba(184, 134, 11, .1);
+      color: var(--warn);
+    }
+
+    .status-badge.APPROVED {
+      background: rgba(44, 122, 75, .1);
+      color: var(--ok);
+    }
+
+    .status-badge.REJECTED {
+      background: rgba(192, 57, 43, .1);
+      color: var(--err);
+    }
+
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--td);
+    }
+
+    .empty div:first-child {
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+
+    .empty div:last-child {
+      font-size: 14px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 999;
+      background: var(--t);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 13px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all .25s;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .toast.ok {
+      background: var(--ok);
+    }
+
+    .toast.err {
+      background: var(--err);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 60px;
+      color: var(--td);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+    }
+
+    @media(max-width: 600px) {
+      .card {
+        flex-direction: column;
+      }
+
+      .card-status {
+        flex-direction: row;
+        align-self: flex-start;
+      }
+
+      .main {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Login Screen -->
+  <div id="login-screen">
+    <div class="login-card">
+      <div class="login-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+        </svg>
+      </div>
+      <div class="login-title">Approver Portal</div>
+      <div class="login-sub">Sign in to review pending visitor requests</div>
+      <div class="field">
+        <label>Your Name</label>
+        <select id="approver-select">
+          <option value="">Select approver...</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="password-input" placeholder="Enter your password" autocomplete="current-password">
+      </div>
+      <button class="login-btn" onclick="doLogin()">Sign In →</button>
+      <div class="login-err" id="login-err"></div>
+    </div>
+  </div>
+
+  <!-- Main Screen -->
+  <div id="main-screen">
+    <header class="topbar">
+      <div class="tl">
+        <div class="logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+          </svg>
+        </div>
+        <span class="brand">VisitorOS</span>
+        <span class="badge" id="top-name"></span>
+      </div>
+      <div class="user-badge">
+        <span class="user-dot"></span>
+        <span id="top-role">Approver</span>
+        <button class="logout-btn" onclick="doLogout()">Sign out</button>
+      </div>
+    </header>
+
+    <div class="main">
+      <div class="page-header">
+        <div class="page-title">Visitor Requests</div>
+        <div class="page-sub" id="page-sub">Showing requests assigned to you</div>
+      </div>
+
+      <div class="stats">
+        <div class="stat pending">
+          <div class="stat-n" id="s-pending">—</div>
+          <div class="stat-l">Pending</div>
+        </div>
+        <div class="stat approved">
+          <div class="stat-n" id="s-approved">—</div>
+          <div class="stat-l">Approved</div>
+        </div>
+        <div class="stat rejected">
+          <div class="stat-n" id="s-rejected">—</div>
+          <div class="stat-l">Rejected</div>
+        </div>
+      </div>
+
+      <div class="refresh-bar">
+        <h2>Pending Approval</h2>
+        <button class="refresh-btn" onclick="loadVisitors()">↺ Refresh</button>
+      </div>
+
+      <div class="cards" id="cards-container">
+        <div class="loading">Loading visitors...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const BASE = '';  // same origin
+
+    // ── Approver credentials ──
+    // Add more approvers here: { name, mobile, password }
+    // mobile must match approver_mobile stored in sheets
+    const APPROVERS = [
+      { name: 'Manoj Verma', mobile: '918168879409', password: 'manoj123' },
+      { name: 'Yaman Verma', mobile: '918708830157', password: 'yaman123' },
+    ];
+
+    let currentApprover = null;
+
+    // ── Populate dropdown ──
+    window.onload = () => {
+      const sel = document.getElementById('approver-select');
+      APPROVERS.forEach((a, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = a.name;
+        sel.appendChild(opt);
+      });
+
+      // Check session
+      const saved = sessionStorage.getItem('approver');
+      if (saved) {
+        currentApprover = JSON.parse(saved);
+        showMain();
+      }
+
+      document.getElementById('password-input').addEventListener('keydown', e => {
+        if (e.key === 'Enter') doLogin();
+      });
+    };
+
+    function doLogin() {
+      const idx = document.getElementById('approver-select').value;
+      const pwd = document.getElementById('password-input').value;
+      const err = document.getElementById('login-err');
+
+      if (idx === '') { err.textContent = 'Please select your name'; return; }
+      if (!pwd) { err.textContent = 'Please enter your password'; return; }
+
+      const approver = APPROVERS[parseInt(idx)];
+      if (approver.password !== pwd) {
+        err.textContent = 'Incorrect password. Please try again.';
+        document.getElementById('password-input').value = '';
+        return;
+      }
+
+      currentApprover = approver;
+      sessionStorage.setItem('approver', JSON.stringify(approver));
+      err.textContent = '';
+      showMain();
+    }
+
+    function doLogout() {
+      sessionStorage.removeItem('approver');
+      currentApprover = null;
+      document.getElementById('main-screen').style.display = 'none';
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('password-input').value = '';
+    }
+
+    function showMain() {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('main-screen').style.display = 'block';
+      document.getElementById('top-name').textContent = currentApprover.name;
+      loadVisitors();
+    }
+
+    async function loadVisitors() {
+      const container = document.getElementById('cards-container');
+      container.innerHTML = '<div class="loading">Loading...</div>';
+
+      try {
+        const res = await fetch('/admin-data');
+        const data = await res.json();
+
+        if (!data.success) throw new Error(data.error);
+
+        // Filter to only this approver's visitors
+        const mine = data.visitors.filter(v =>
+          String(v.approver_mobile).replace(/\D/g, '') === currentApprover.mobile
+        );
+
+        const pending = mine.filter(v => v.status === 'PENDING').length;
+        const approved = mine.filter(v => v.status === 'APPROVED').length;
+        const rejected = mine.filter(v => v.status === 'REJECTED').length;
+
+        document.getElementById('s-pending').textContent = pending;
+        document.getElementById('s-approved').textContent = approved;
+        document.getElementById('s-rejected').textContent = rejected;
+        document.getElementById('page-sub').textContent = `${mine.length} total requests assigned to ${currentApprover.name}`;
+
+        // Show pending first, then recent approved/rejected
+        const sorted = [...mine].sort((a, b) => {
+          if (a.status === 'PENDING' && b.status !== 'PENDING') return -1;
+          if (a.status !== 'PENDING' && b.status === 'PENDING') return 1;
+          return 0;
+        });
+
+        if (sorted.length === 0) {
+          container.innerHTML = '<div class="empty"><div>📋</div><div>No visitor requests assigned to you yet</div></div>';
+          return;
+        }
+
+        container.innerHTML = sorted.map(v => renderCard(v)).join('');
+
+      } catch (err) {
+        container.innerHTML = `<div class="empty"><div>⚠️</div><div>Error loading visitors: ${err.message}</div></div>`;
+      }
+    }
+
+    function renderCard(v) {
+      const photo = v.photo_url
+        ? `<div class="card-photo"><img src="${v.photo_url}" alt="" onerror="this.parentElement.textContent='👤'"></div>`
+        : `<div class="card-photo">👤</div>`;
+
+      const actions = v.status === 'PENDING' ? `
+      <button class="btn-approve" onclick="act('${v.visitor_id}','approve',this)">✓ Approve</button>
+      <button class="btn-reject"  onclick="act('${v.visitor_id}','reject',this)">✗ Reject</button>
+    ` : v.status === 'APPROVED' ? `
+      <a class="btn-pass" href="/pass/${v.visitor_id}" target="_blank">View Pass ↗</a>
+    ` : '';
+
+      return `
+    <div class="card ${v.status.toLowerCase()}" id="card-${v.visitor_id}">
+      ${photo}
+      <div class="card-body">
+        <div class="card-name">${v.visitor_name}</div>
+        <div class="card-meta">
+          <span class="meta-pill">📱 ${v.visitor_mobile}</span>
+          <span class="meta-pill">🎯 ${v.purpose}</span>
+          <span class="meta-pill">📅 ${v.visit_date} ${v.visit_time}</span>
+          ${v.visitor_email ? `<span class="meta-pill">✉️ ${v.visitor_email}</span>` : ''}
+        </div>
+        <div class="card-actions">${actions}</div>
+      </div>
+      <div class="card-status">
+        <span class="status-badge ${v.status}">${v.status}</span>
+      </div>
+    </div>`;
+    }
+
+    async function act(visitorId, action, btn) {
+      btn.disabled = true;
+      btn.textContent = action === 'approve' ? 'Approving...' : 'Rejecting...';
+
+      try {
+        const url = action === 'approve' ? `/approve/${visitorId}` : `/reject/${visitorId}`;
+        const res = await fetch(url);
+
+        if (res.ok) {
+          showToast(action === 'approve' ? '✅ Visitor approved! Pass sent.' : '❌ Visitor rejected.', action === 'approve' ? 'ok' : 'err');
+          // Reload after short delay
+          setTimeout(loadVisitors, 1200);
+        } else {
+          const text = await res.text();
+          showToast('Error: ' + text.slice(0, 80), 'err');
+          btn.disabled = false;
+          btn.textContent = action === 'approve' ? '✓ Approve' : '✗ Reject';
+        }
+      } catch (err) {
+        showToast('Network error: ' + err.message, 'err');
+        btn.disabled = false;
+      }
+    }
+
+    function showToast(msg, type = '') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast show ' + type;
+      setTimeout(() => t.className = 'toast', 3000);
+    }
+
+    // Auto-refresh every 30 seconds when on main screen
+    setInterval(() => {
+      if (currentApprover) loadVisitors();
+    }, 30000);
+  </script>
+</body>
+
+</html>
