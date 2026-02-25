@@ -8,11 +8,11 @@ const { sendPassToVisitor, sendRejectionNotice } = require('./_whatsapp');
 // Always prefer it over hardcoded BASE_URL env var
 // ─────────────────────────────────────────
 function getBaseUrl() {
-  // Vercel auto-sets VERCEL_URL like "visitoros.vercel.app" (no https://)
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  // Fallback to manually set production URL
-  if (process.env.BASE_URL && !process.env.BASE_URL.includes('localhost')) return process.env.BASE_URL;
-  // Last resort — hardcode your production domain
+  // Always use BASE_URL env var (set to https://visitoros.vercel.app in Vercel)
+  // NEVER use VERCEL_URL — that is the preview deployment URL, not production
+  if (process.env.BASE_URL && !process.env.BASE_URL.includes('localhost')) {
+    return process.env.BASE_URL;
+  }
   return 'https://visitoros.vercel.app';
 }
 
