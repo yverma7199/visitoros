@@ -172,48 +172,68 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background-im
 <div class="toast" id="toast"></div>
 
 <script>
-// ── CONFIGURE APPROVERS ───────────────────────────────────────────
-// mobile must exactly match approver_mobile stored in Google Sheets (digits only)
-const APPROVERS = [
-  { name: 'Manoj Verma', mobile: '918168879409', password: 'manoj123' },
-  { name: 'Yaman Verma', mobile: '918708830157', password: 'yaman123' },
-];
+// ── APPROVER PASSWORDS ────────────────────────────────────────────
+// Key = whatsapp_number from People sheet (digits only)
+// Names and mobiles are fetched live from the sheet — only passwords stay here
+const PASSWORDS = {
+  '918168879409': 'yaman123',   // Yaman Verma
+  '918221915973': 'manoj123',   // Manoj Verma
+};
 // ─────────────────────────────────────────────────────────────────
 
-let me = null, all = [], filt = 'ALL';
+let me = null, all = [], filt = 'ALL', peopleList = [];
 
-window.onload = () => {
-  // Populate dropdown
-  const sel = document.getElementById('asel');
-  APPROVERS.forEach((a,i) => {
-    const o = document.createElement('option');
-    o.value = i; o.textContent = a.name; sel.appendChild(o);
-  });
-
-  // Restore session
+window.onload = async () => {
+  // Restore session first (before fetch)
   try {
     const s = sessionStorage.getItem('vos_me');
-    if (s) { me = JSON.parse(s); showMain(); }
+    if (s) { me = JSON.parse(s); showMain(); return; }
   } catch(e) {}
+
+  // Fetch people from sheet to populate dropdown
+  await loadPeople();
 
   document.getElementById('pwdinp').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 };
+
+async function loadPeople() {
+  const sel = document.getElementById('asel');
+  sel.innerHTML = '<option value="">Loading...</option>';
+  try {
+    const r = await fetch('/people');
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error);
+    peopleList = d.people;
+    sel.innerHTML = '<option value="">Select your name...</option>';
+    peopleList.forEach((p, i) => {
+      const o = document.createElement('option');
+      o.value = i;
+      o.textContent = p.name;
+      sel.appendChild(o);
+    });
+  } catch(e) {
+    sel.innerHTML = '<option value="">Error loading people</option>';
+    console.error('loadPeople error:', e);
+  }
+}
 
 function doLogin() {
   const idx = document.getElementById('asel').value;
   const pwd = document.getElementById('pwdinp').value;
   const err = document.getElementById('lerr');
   err.textContent = '';
-  if (!idx)  { err.textContent = 'Please select your name.'; return; }
-  if (!pwd)  { err.textContent = 'Please enter your password.'; return; }
-  const a = APPROVERS[+idx];
-  if (a.password !== pwd) {
-    err.textContent = 'Incorrect password. Try again.';
-    document.getElementById('pwdinp').value = '';
-    return;
-  }
-  me = a;
-  sessionStorage.setItem('vos_me', JSON.stringify(a));
+  if (idx === '') { err.textContent = 'Please select your name.'; return; }
+  if (!pwd)       { err.textContent = 'Please enter your password.'; return; }
+
+  const person = peopleList[+idx];
+  const mobile = String(person.whatsapp_number || person.mobile_number || '').replace(/\D/g, '');
+  const correct = PASSWORDS[mobile];
+
+  if (!correct)        { err.textContent = 'No password set for this account. Contact admin.'; return; }
+  if (correct !== pwd) { err.textContent = 'Incorrect password. Try again.'; document.getElementById('pwdinp').value = ''; return; }
+
+  me = { name: person.name, mobile };
+  sessionStorage.setItem('vos_me', JSON.stringify(me));
   showMain();
 }
 
